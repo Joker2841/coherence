@@ -1,0 +1,9 @@
+[
+  {"id": "w1_groom", "text": "Doug is the groom and the wedding is on Sunday.", "source": "Phil", "time": "2025-06-27T10:00:00"},
+  {"id": "w2_roof_9pm", "text": "At 9 PM, Doug was seen on the hotel roof.", "source": "Phil", "time": "2025-06-27T21:00:00"},
+  {"id": "w3_pool_9pm", "text": "At 9 PM, Doug was at the pool bar on the ground floor.", "source": "Stu", "time": "2025-06-27T21:00:00"},
+  {"id": "w4_caesars", "text": "Doug's bachelor party started at Caesars Palace.", "source": "Alan", "time": "2025-06-27T20:00:00"},
+  {"id": "w5_chapel", "text": "We thought Doug was on the roof, but he has now been found at the wedding chapel.", "source": "Stu", "time": "2025-06-28T07:00:00"},
+  {"id": "w6_suite", "text": "Doug never left the hotel suite all night.", "source": "Mr. Chow", "time": "2025-06-27T23:00:00"},
+  {"id": "w7_airport", "text": "A taxi dropped Doug at the airport at 11 PM.", "source": "Taxi log", "time": "2025-06-27T23:00:00"}
+]

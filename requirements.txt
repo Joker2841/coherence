@@ -1,0 +1,19 @@
+# Coherence — free, local-first stack. Total cost: $0.
+
+# Cognee with the extras we need (free LLM via Groq + CPU embeddings via Fastembed).
+# For a FULLY offline setup instead, swap to:  cognee[ollama]
+cognee[fastembed,groq]
+
+# Embedded graph DB (file-based, no server).
+kuzu
+
+# Vector DB (LanceDB ships inside cognee core; listed here for clarity).
+# lancedb
+
+# API layer for the debugger.
+fastapi
+uvicorn[standard]
+
+# Config + the LLM judge fallback path.
+python-dotenv
+litellm

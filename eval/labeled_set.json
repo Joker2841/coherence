@@ -1,0 +1,14 @@
+{
+  "note": "Pairs reference the human-readable `id` fields in the data files. Used to score detection precision / recall. `type` is the expected conflict class.",
+  "pairs": [
+    {"a": "w2_roof_9pm", "b": "w3_pool_9pm", "is_contradiction": true,  "type": "semantic"},
+    {"a": "w2_roof_9pm", "b": "w5_chapel",   "is_contradiction": true,  "type": "temporal_supersession"},
+    {"a": "w6_suite",    "b": "w7_airport",  "is_contradiction": true,  "type": "semantic"},
+    {"a": "w1_groom",    "b": "w4_caesars",  "is_contradiction": false, "type": "none"},
+
+    {"a": "m1_veg",   "b": "m2_steak",  "is_contradiction": true,  "type": "semantic"},
+    {"a": "m3_wed",   "b": "m4_fri",    "is_contradiction": true,  "type": "temporal_supersession"},
+    {"a": "m5_sarah", "b": "m6_david",  "is_contradiction": true,  "type": "temporal_supersession"},
+    {"a": "m1_veg",   "b": "m7_morning","is_contradiction": false, "type": "none"}
+  ]
+}

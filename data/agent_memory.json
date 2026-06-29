@@ -1,0 +1,9 @@
+[
+  {"id": "m1_veg", "text": "The user is vegetarian and avoids all meat.", "source": "session_12", "time": "2025-03-01T09:00:00"},
+  {"id": "m2_steak", "text": "The user ordered a medium-rare steak for dinner.", "source": "session_88", "time": "2025-06-20T19:30:00"},
+  {"id": "m3_wed", "text": "The Q3 review meeting is scheduled for Wednesday.", "source": "session_40", "time": "2025-06-10T11:00:00"},
+  {"id": "m4_fri", "text": "Update: the Q3 review meeting has been moved to Friday.", "source": "session_57", "time": "2025-06-18T14:00:00"},
+  {"id": "m5_sarah", "text": "The user's manager is Sarah.", "source": "session_15", "time": "2025-01-05T10:00:00"},
+  {"id": "m6_david", "text": "After the reorg, the user now reports to David.", "source": "session_90", "time": "2025-06-22T16:00:00"},
+  {"id": "m7_morning", "text": "The user prefers meetings in the morning.", "source": "session_20", "time": "2025-02-01T08:00:00"}
+]

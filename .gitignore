@@ -1,0 +1,19 @@
+# Secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Cognee local state / embedded DBs
+.cognee/
+.cognee_system/
+.data_storage/
+*.kuzu/
+*.lance/
+*.lancedb/
+*.db
+.anon_id
