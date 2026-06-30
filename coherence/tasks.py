@@ -23,90 +23,92 @@ from .temporal import check_supersession
 # --------------------------------------------------------------------------
 # helpers
 # --------------------------------------------------------------------------
-def _node_to_claim(node: Any) -> dict:
-    """Normalize a graph node into a plain claim dict.
-
-    FIRST-RUN CHECK: match attribute access to your CogneeGraph node shape. The
-    memify docs show nodes exposing `node.attributes[...]`; adjust if needed.
-    """
-    attrs = getattr(node, "attributes", None) or {}
-    get = attrs.get if hasattr(attrs, "get") else (lambda k, d=None: getattr(node, k, d))
+def _node_to_claim(node):
+    """Normalize a graph node into a plain claim dict."""
+    attrs = getattr(node, "attributes", None)
+    get = attrs.get if isinstance(attrs, dict) else (lambda k, d=None: getattr(node, k, d))
     return {
         "id": get("id") or getattr(node, "id", None),
-        "text": get("text", ""),
-        "subject": get("subject", ""),
-        "predicate": get("predicate", ""),
-        "object": get("object", ""),
+        "text": get("text", "") or get("name", "") or "",
+        "subject": get("subject", "") or "",
+        "predicate": get("predicate", "") or "",
+        "object": get("object", "") or "",
         "valid_from": get("valid_from"),
         "source": get("source"),
     }
 
 
-# --------------------------------------------------------------------------
-# extraction task: yields candidate PAIRS (the cost gate)
-# --------------------------------------------------------------------------
-async def find_candidate_pairs(subgraphs: list[Any]) -> AsyncIterator[tuple[dict, dict]]:
-    """
-    Receives the existing graph (already filtered to the 'claims' NodeSet via
-    memify's `node_name` arg) and yields only claim pairs worth checking -- those
-    sharing a subject. We never emit the full O(n^2) cross product.
-    """
-    claims: list[dict] = []
+def _as_pairs(obj):
+    """Cognee hands the next task a BATCH (list). Accept every shape it might use."""
+    def is_pair(x):
+        return isinstance(x, (tuple, list)) and len(x) == 2 and all(isinstance(i, dict) for i in x)
+    if is_pair(obj):
+        return [tuple(obj)]
+    if isinstance(obj, (list, tuple)):
+        return [tuple(i) for i in obj if is_pair(i)]
+    return []
+
+
+async def find_candidate_pairs(subgraphs):
+    """Extraction task: yield candidate claim PAIRS (same subject) worth checking."""
+    if not isinstance(subgraphs, list):
+        subgraphs = [subgraphs]
+
+    claims = []
     for sg in subgraphs:
-        nodes = getattr(sg, "nodes", {})
-        iterable = nodes.values() if hasattr(nodes, "values") else nodes
+        nodes = getattr(sg, "nodes", None)
+        if nodes is None:
+            iterable = [sg]
+        elif hasattr(nodes, "values"):
+            iterable = nodes.values()
+        else:
+            iterable = nodes
         for node in iterable:
-            claim = _node_to_claim(node)
-            if claim["text"]:
-                claims.append(claim)
+            c = _node_to_claim(node)
+            if c["text"] or c["subject"]:
+                claims.append(c)
 
-    by_subject: dict[str, list[dict]] = {}
-    for claim in claims:
-        by_subject.setdefault(claim["subject"], []).append(claim)
+    # ---- DEBUG (delete once verified) ----
+    print(f"\n[debug] {len(claims)} claim nodes in scope")
+    for c in claims[:4]:
+        print(f"[debug]   subj={c['subject']!r} pred={c['predicate']!r} "
+              f"obj={c['object']!r} from={c['valid_from']!r} text={c['text'][:70]!r}")
+    # --------------------------------------
 
+    by_subject = {}
+    for c in claims:
+        by_subject.setdefault(c["subject"], []).append(c)
+
+    pairs = 0
     for group in by_subject.values():
         for a, b in combinations(group, 2):
-            # OPTIONAL optimization: additionally gate on vector similarity of
-            # a["text"] vs b["text"] to skip clearly-unrelated pairs before the LLM.
+            pairs += 1
             yield (a, b)
+    print(f"[debug] yielded {pairs} candidate pairs\n")
 
 
-# --------------------------------------------------------------------------
-# enrichment task: detect + persist a Contradiction node
-# --------------------------------------------------------------------------
-async def detect_contradictions(pair: tuple[dict, dict]) -> AsyncIterator[Contradiction]:
-    """
-    Two-path detection:
-      1. temporal supersession  -> deterministic, NO LLM
-      2. semantic contradiction -> LLM, only when (1) does not fire
-    Persists each Contradiction back into the graph and yields it downstream.
-    """
-    a, b = pair
+async def detect_contradictions(batch):
+    """Enrichment task: receives a BATCH (list) of candidate pairs, not one pair."""
+    for a, b in _as_pairs(batch):
+        sup = check_supersession(a, b)
+        if sup:
+            node = Contradiction(
+                claim_a_id=a.get("id", ""), claim_b_id=b.get("id", ""),
+                conflict_type=sup["conflict_type"], verdict=sup["verdict"],
+                confidence=sup["confidence"], winner_claim_id=sup["winner_claim_id"],
+            )
+            await add_data_points([node])
+            print(f"[debug] CONFLICT temporal: {sup['verdict']}")
+            yield node
+            continue
 
-    # Path 1: free + deterministic.
-    sup = check_supersession(a, b)
-    if sup:
-        node = Contradiction(
-            claim_a_id=a["id"],
-            claim_b_id=b["id"],
-            conflict_type=sup["conflict_type"],
-            verdict=sup["verdict"],
-            confidence=sup["confidence"],
-            winner_claim_id=sup["winner_claim_id"],
-        )
-        await add_data_points([node])
-        yield node
-        return
-
-    # Path 2: paid path, but only on a pre-filtered same-subject pair.
-    verdict = await judge_contradiction(a["text"], b["text"])
-    if verdict and verdict.get("contradiction"):
-        node = Contradiction(
-            claim_a_id=a["id"],
-            claim_b_id=b["id"],
-            conflict_type="semantic",
-            verdict=verdict.get("reason", "Conflicting claims."),
-            confidence=0.85,
-        )
-        await add_data_points([node])
-        yield node
+        verdict = await judge_contradiction(a.get("text", ""), b.get("text", ""))
+        if verdict and verdict.get("contradiction"):
+            node = Contradiction(
+                claim_a_id=a.get("id", ""), claim_b_id=b.get("id", ""),
+                conflict_type="semantic",
+                verdict=verdict.get("reason", "Conflicting claims."), confidence=0.85,
+            )
+            await add_data_points([node])
+            print(f"[debug] CONFLICT semantic: {verdict.get('reason')}")
+            yield node

@@ -46,10 +46,9 @@ def _guard_no_openai_fallback() -> None:
             "Both LLM_PROVIDER and EMBEDDING_PROVIDER must be set. Leaving either "
             "unset makes Cognee silently fall back to OpenAI (paid)."
         )
-    if LLM_PROVIDER == "groq" and not LLM_API_KEY:
-        raise RuntimeError(
-            "LLM_PROVIDER=groq but LLM_API_KEY is empty. Put your free Groq key in .env."
-        )
+        
+    if "groq/" in LLM_MODEL and not LLM_API_KEY:
+      raise RuntimeError("Using a Groq model but LLM_API_KEY is empty. Put your free Groq key in .env.")
 
 
 def setup() -> None:

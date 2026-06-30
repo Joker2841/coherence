@@ -17,3 +17,4 @@ uvicorn[standard]
 # Config + the LLM judge fallback path.
 python-dotenv
 litellm
+transformers
