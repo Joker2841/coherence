@@ -2,6 +2,7 @@
   {"id": "w1_groom",  "subject": "Doug", "predicate": "role",     "object": "groom",          "text": "Doug is the groom; the wedding is Sunday.", "source": "Phil",     "time": "2025-06-27T10:00:00"},
   {"id": "w2_roof",   "subject": "Doug", "predicate": "location", "object": "hotel roof",      "text": "At 9 PM, Doug was on the hotel roof.",      "source": "Phil",     "time": "2025-06-27T21:00:00"},
   {"id": "w3_pool",   "subject": "Doug", "predicate": "location", "object": "pool bar",        "text": "At 9 PM, Doug was at the pool bar.",        "source": "Stu",      "time": "2025-06-27T21:00:00"},
+  {"id": "w4_caesars", "subject": "Doug", "predicate": "event", "object": "bachelor party at Caesars", "text": "Doug attended a bachelor party at Caesars.", "source": "witness", "time": "2025-06-27T20:00:00"},
   {"id": "w5_chapel", "subject": "Doug", "predicate": "location", "object": "wedding chapel",  "text": "Doug has now been found at the chapel.",    "source": "Stu",      "time": "2025-06-28T07:00:00"},
   {"id": "w6_suite",  "subject": "Doug", "predicate": "location", "object": "hotel suite",     "text": "Doug never left the hotel suite all night.","source": "Mr. Chow", "time": "2025-06-27T23:00:00"},
   {"id": "w7_airport","subject": "Doug", "predicate": "location", "object": "airport",         "text": "A taxi dropped Doug at the airport at 11 PM.","source": "Taxi log","time": "2025-06-27T23:00:00"}

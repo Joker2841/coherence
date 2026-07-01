@@ -26,6 +26,7 @@ class Claim(DataPoint):
     source: Optional[str] = None       # witness / session id that asserted it
     confidence: float = 1.0
     status: str = "active"             # active | superseded | retracted
+    ref_id: Optional[str] = None   # human-readable dataset id, for eval mapping
 
     # Only `text` is embedded -> cheap semantic candidate-finding during detection.
     metadata: dict = {"index_fields": ["text"]}
@@ -41,6 +42,8 @@ class Contradiction(DataPoint):
 
     claim_a_id: str = ""
     claim_b_id: str = ""
+    ref_a: str = ""
+    ref_b: str = ""
     conflict_type: str = "semantic"    # "temporal_supersession" | "semantic"
     verdict: str = ""                  # human-readable explanation
     confidence: float = 0.0

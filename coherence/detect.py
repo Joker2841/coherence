@@ -38,8 +38,9 @@ from .temporal import parse
 
 
 def _d(c: Claim) -> dict:
-    return {"id": str(getattr(c, "id", "")), "text": c.text, "subject": c.subject,
-            "predicate": c.predicate, "object": c.object, "valid_from": c.valid_from}
+    return {"id": str(getattr(c, "id", "")), "ref": getattr(c, "ref_id", "") or "",
+            "text": c.text, "subject": c.subject, "predicate": c.predicate,
+            "object": c.object, "valid_from": c.valid_from}
 
 
 async def detect(claims: list[Claim], use_llm: bool = False) -> list[Contradiction]:
@@ -60,6 +61,7 @@ async def detect(claims: list[Claim], use_llm: bool = False) -> list[Contradicti
                     found.append(Contradiction(
                         claim_a_id=a["id"], claim_b_id=b["id"],
                         conflict_type="contradiction", confidence=1.0,
+                        ref_a=a["ref"], ref_b=b["ref"],
                         verdict=f"{subj}.{pred} is both '{a['object']}' and '{b['object']}' at {t}."))
                     print(f"[CONTRADICTION] {subj}.{pred}: '{a['object']}' vs '{b['object']}' @ {t}")
 
@@ -72,6 +74,7 @@ async def detect(claims: list[Claim], use_llm: bool = False) -> list[Contradicti
                     found.append(Contradiction(
                         claim_a_id=older["id"], claim_b_id=latest["id"],
                         conflict_type="supersession", confidence=1.0, winner_claim_id=latest["id"],
+                        ref_a=older["ref"], ref_b=latest["ref"],
                         verdict=f"{subj}.{pred}: '{older['object']}' ({older['valid_from']}) "
                                 f"superseded by '{latest['object']}' ({latest['valid_from']})."))
                     print(f"[SUPERSESSION] {subj}.{pred}: '{older['object']}' -> '{latest['object']}'")

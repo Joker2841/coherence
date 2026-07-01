@@ -1,47 +1,44 @@
-"""
-Precision / recall harness over the labeled set of known conflicts.
-
-Run AFTER detection so you can score what the engine actually caught:
-
-    python eval/evaluate.py
-
-This is a differentiator: almost no hackathon team shows real metrics. Wire
-`predicted_pairs` to the Contradictions your run produced (read them from the
-graph, or capture them as detection yields them).
-"""
-from __future__ import annotations
-
-import json
+import argparse, asyncio, json
 from pathlib import Path
+from coherence import config
+config.setup()
+import cognee
+from coherence.ingest import ingest_statements
+from coherence.detect import detect
 
+DATA = Path(__file__).resolve().parent.parent / "data"
 LABELED = Path(__file__).resolve().parent / "labeled_set.json"
 
 
-def score(predicted_pairs: set[frozenset], labeled: list[dict]) -> dict:
-    truth = {frozenset((x["a"], x["b"])): x["is_contradiction"] for x in labeled}
-    tp = sum(1 for k, v in truth.items() if v and k in predicted_pairs)
-    fp = sum(1 for k in predicted_pairs if not truth.get(k, False))
-    fn = sum(1 for k, v in truth.items() if v and k not in predicted_pairs)
+def score(detected, labeled):
+    k = lambda p: frozenset((p["a"], p["b"]))
+    pos = {k(p) for p in labeled if p["is_contradiction"]}
+    neg = {k(p) for p in labeled if not p["is_contradiction"]}
+    tp, fn = len(detected & pos), len(pos - detected)
+    fp = len(detected & neg) + len(detected - (pos | neg))
+    P = tp / (tp + fp) if tp + fp else 0.0
+    R = tp / (tp + fn) if tp + fn else 0.0
+    F = 2 * P * R / (P + R) if P + R else 0.0
+    return P, R, F, tp, fp, fn, sorted(tuple(x) for x in (pos - detected))
 
-    precision = tp / (tp + fp) if (tp + fp) else 0.0
-    recall = tp / (tp + fn) if (tp + fn) else 0.0
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
 
-    return {
-        "true_positives": tp,
-        "false_positives": fp,
-        "false_negatives": fn,
-        "precision": round(precision, 3),
-        "recall": round(recall, 3),
-        "f1": round(f1, 3),
-    }
+async def run(dataset, use_llm):
+    await cognee.prune.prune_data(); await cognee.prune.prune_system(metadata=True)
+    statements = json.loads((DATA / f"{dataset}.json").read_text())
+    ids = {s["id"] for s in statements}
+    conflicts = await detect(await ingest_statements(statements), use_llm=use_llm)
+    detected = {frozenset((c.ref_a, c.ref_b)) for c in conflicts if c.ref_a and c.ref_b}
+    labeled = [p for p in json.loads(LABELED.read_text())["pairs"]
+               if p["a"] in ids and p["b"] in ids]
+    P, R, F, tp, fp, fn, missed = score(detected, labeled)
+    print(f"\n=== {dataset}  (LLM {'ON' if use_llm else 'off'}) ===")
+    print(f"precision {P:.0%}   recall {R:.0%}   f1 {F:.2f}   (TP={tp} FP={fp} FN={fn})")
+    if missed: print(f"missed: {missed}")
 
 
 if __name__ == "__main__":
-    labeled = json.loads(LABELED.read_text())["pairs"]
-
-    # TODO: replace with the pairs your detection flagged, e.g.
-    #   predicted_pairs = {frozenset((c.claim_a_id, c.claim_b_id)) for c in contradictions}
-    predicted_pairs: set[frozenset] = set()
-
-    print(json.dumps(score(predicted_pairs, labeled), indent=2))
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--dataset", default="doug_witnesses")
+    ap.add_argument("--use-llm", action="store_true")
+    a = ap.parse_args()
+    asyncio.run(run(a.dataset, a.use_llm))

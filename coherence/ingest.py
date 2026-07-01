@@ -44,7 +44,8 @@ from .models import Claim
 
 def _to_claim(s: dict) -> Claim:
     return Claim(text=s["text"], subject=s["subject"], predicate=s["predicate"],
-                 object=s["object"], valid_from=s.get("time"), source=s.get("source"))
+                 object=s["object"], valid_from=s.get("time"),
+                 source=s.get("source"), ref_id=s.get("id"))
 
 
 async def ingest_statements(statements: list[dict], dataset: str = DATASET) -> list[Claim]:
