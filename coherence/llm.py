@@ -16,33 +16,36 @@ class ContradictionVerdict(BaseModel):
     contradiction: bool
     reason: str
 
+_SYSTEM = ("You judge whether two claims about the same subject LOGICALLY CONTRADICT — "
+           "whether they CANNOT both be true. Be strict: most claim pairs are compatible.")
 
-_SYSTEM = "You are a strict consistency checker. Return only the structured verdict."
+_PROMPT = """Two claims about the same subject. Can they BOTH be true at once?
 
-_PROMPT = """Do these two claims about the same subject DIRECTLY CONTRADICT each other
-(they cannot both be true at the same time)? Ignore differences that are merely
-additional detail.
+A contradiction means one claim makes the other IMPOSSIBLE. Apply these rules:
+- Different times -> the subject changed over time. That is an UPDATE, not a contradiction.
+- Different aspects (a role vs an event vs a location) usually coexist. NOT a contradiction.
+- Call it a contradiction only when both cannot hold, e.g. a stated property broken by an action.
 
-Claim A: {a}
-Claim B: {b}"""
+Examples:
+- "is the groom" [role] + "had a bachelor party" [event] -> NOT a contradiction.
+- "on the roof at 9 PM" [location] + "in the suite at 11 PM" [location] -> NOT a contradiction (different times).
+- "is vegetarian" [diet] + "ordered a steak" [meal] -> CONTRADICTION.
 
+Claim A: {a_text}   [aspect={a_pred}, time={a_time}]
+Claim B: {b_text}   [aspect={b_pred}, time={b_time}]
 
-async def judge_contradiction(text_a: str, text_b: str) -> Optional[dict]:
-    """Return {'contradiction': bool, 'reason': str}, or None on failure."""
+Respond ONLY with: {{"contradiction": true or false, "reason": ""}}"""
+
+async def judge_contradiction(a: dict, b: dict):
     from cognee.infrastructure.llm.LLMGateway import LLMGateway
-
+    prompt = _PROMPT.format(
+        a_text=a["text"], a_pred=a["predicate"], a_time=a.get("valid_from") or "unknown",
+        b_text=b["text"], b_pred=b["predicate"], b_time=b.get("valid_from") or "unknown"
+    )
     try:
-        result = await LLMGateway.acreate_structured_output(
-            text_input=_PROMPT.format(a=text_a, b=text_b),
-            system_prompt=_SYSTEM,
-            response_model=ContradictionVerdict,
-        )
-        if isinstance(result, dict):
-            return result
-        return {
-            "contradiction": bool(getattr(result, "contradiction", False)),
-            "reason": getattr(result, "reason", ""),
-        }
-    except Exception as e:  # surface the real error this time, don't mask it
-        print(f"[coherence] LLM judge error: {type(e).__name__}: {e}")
+        r = await LLMGateway.acreate_structured_output(
+            text_input=prompt, system_prompt=_SYSTEM, response_model=ContradictionVerdict)
+        return r if isinstance(r, dict) else {"contradiction": bool(r.contradiction), "reason": r.reason}
+    except Exception as e:
+        print(f"[coherence] judge error: {type(e).__name__}: {e}")
         return None
