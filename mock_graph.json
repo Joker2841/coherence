@@ -1,0 +1,20 @@
+{
+  "dataset": "doug_witnesses",
+  "nodes": [
+    {"id": "w1_groom",   "type": "claim", "subject": "Doug", "predicate": "role",     "object": "groom",                    "text": "Doug is the groom; the wedding is Sunday.", "valid_from": "2025-06-27T10:00:00", "source": "Phil",     "status": "active",     "source_trust": 1.0},
+    {"id": "w2_roof",    "type": "claim", "subject": "Doug", "predicate": "location", "object": "hotel roof",               "text": "At 9 PM, Doug was on the hotel roof.",   "valid_from": "2025-06-27T21:00:00", "source": "Phil",     "status": "superseded", "source_trust": 1.0},
+    {"id": "w3_pool",    "type": "claim", "subject": "Doug", "predicate": "location", "object": "pool bar",                 "text": "At 9 PM, Doug was at the pool bar.",     "valid_from": "2025-06-27T21:00:00", "source": "Stu",      "status": "superseded", "source_trust": 1.0},
+    {"id": "w4_caesars", "type": "claim", "subject": "Doug", "predicate": "event",    "object": "bachelor party at Caesars","text": "Doug's bachelor party started at Caesars.","valid_from": "2025-06-27T20:00:00", "source": "Alan",     "status": "active",     "source_trust": 1.0},
+    {"id": "w5_chapel",  "type": "claim", "subject": "Doug", "predicate": "location", "object": "wedding chapel",           "text": "Doug has now been found at the chapel.", "valid_from": "2025-06-28T07:00:00", "source": "Stu",      "status": "active",     "source_trust": 1.0},
+    {"id": "w6_suite",   "type": "claim", "subject": "Doug", "predicate": "location", "object": "hotel suite",              "text": "Doug never left the hotel suite all night.","valid_from": "2025-06-27T23:00:00","source": "Mr. Chow", "status": "superseded", "source_trust": 1.0},
+    {"id": "w7_airport", "type": "claim", "subject": "Doug", "predicate": "location", "object": "airport",                  "text": "A taxi dropped Doug at the airport at 11 PM.","valid_from": "2025-06-27T23:00:00","source": "Taxi log","status": "superseded", "source_trust": 1.0}
+  ],
+  "edges": [
+    {"id": "e1", "source": "w2_roof",   "target": "w3_pool",    "type": "contradicts", "label": "same time, different location", "confidence": 1.0, "resolved": false},
+    {"id": "e2", "source": "w6_suite",  "target": "w7_airport", "type": "contradicts", "label": "same time, different location", "confidence": 1.0, "resolved": false},
+    {"id": "e3", "source": "w5_chapel", "target": "w2_roof",    "type": "supersedes",  "label": "latest location",               "confidence": 1.0, "resolved": false},
+    {"id": "e4", "source": "w5_chapel", "target": "w3_pool",    "type": "supersedes",  "label": "latest location",               "confidence": 1.0, "resolved": false},
+    {"id": "e5", "source": "w5_chapel", "target": "w6_suite",   "type": "supersedes",  "label": "latest location",               "confidence": 1.0, "resolved": false},
+    {"id": "e6", "source": "w5_chapel", "target": "w7_airport", "type": "supersedes",  "label": "latest location",               "confidence": 1.0, "resolved": false}
+  ]
+}

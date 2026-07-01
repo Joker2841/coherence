@@ -1,0 +1,9 @@
+{
+  "dataset": "doug_witnesses",
+  "metrics": {"precision": 1.0, "recall": 1.0, "f1": 1.0, "tp": 6, "fp": 0, "fn": 0},
+  "conflicts": [
+    {"id": "c1", "type": "contradiction", "verdict": "Doug.location is both 'hotel roof' and 'pool bar' at 9 PM.", "confidence": 1.0, "resolved": false, "winner_id": null, "detected_by": "deterministic", "claim_a": {"id": "w2_roof",  "object": "hotel roof", "source": "Phil"}, "claim_b": {"id": "w3_pool",    "object": "pool bar", "source": "Stu"}},
+    {"id": "c2", "type": "contradiction", "verdict": "Doug.location is both 'hotel suite' and 'airport' at 11 PM.", "confidence": 1.0, "resolved": false, "winner_id": null, "detected_by": "deterministic", "claim_a": {"id": "w6_suite", "object": "hotel suite", "source": "Mr. Chow"}, "claim_b": {"id": "w7_airport", "object": "airport", "source": "Taxi log"}},
+    {"id": "c3", "type": "supersession", "verdict": "'hotel roof' (9 PM) superseded by 'wedding chapel' (next morning).", "confidence": 1.0, "resolved": false, "winner_id": "w5_chapel", "detected_by": "deterministic", "claim_a": {"id": "w2_roof", "object": "hotel roof", "source": "Phil"}, "claim_b": {"id": "w5_chapel", "object": "wedding chapel", "source": "Stu"}}
+  ]
+}
