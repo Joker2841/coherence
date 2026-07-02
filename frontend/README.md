@@ -1,28 +1,66 @@
-# Frontend — the live memory debugger
+# Coherence — frontend (the live memory debugger)
 
-This is the primary interface for Coherence. **Not built yet** — it's the next
-step after the backend is verified end to end.
+The debugger UI for Coherence. Renders the claim graph, flags contradictions
+and temporal supersessions, and lets a human resolve them while the memory
+lifecycle (`remember → detect → improve/forget → recall`) fires on screen.
 
-## What it renders
-1. **Graph view** — Claim nodes + Contradiction nodes, with `contradicts` /
-   `supersedes` edges. Conflicting nodes glow; resolved ones settle.
-2. **Conflict panel** — list of detected Contradictions with the verdict,
-   confidence, and conflict type (temporal vs semantic).
-3. **Resolve action** — pick the true claim → `POST /resolve` → watch
-   `improve()` reweight and `forget()` prune the loser live.
-4. **Audit / "why does it believe this?"** — uses each Contradiction's
-   provenance stamp (source_pipeline / source_task).
-5. **Metrics badge** — precision / recall from the eval harness.
+Built with Vite + React. The graph is hand-built SVG driven by a d3-force layout.
 
-## Backend it talks to
-`coherence/server.py` (FastAPI): `/ingest/{dataset}`, `/detect`, `/conflicts`,
-`/graph`, `/resolve`.
+## Quickstart
 
-## Build options (decide when we start)
-- **Extend Cognee's built-in `memory_map` graph view** (fastest; aligns with the
-  open-source PR track since that view is under active development), or
-- **Custom Cytoscape.js / D3 force graph** for full control over the
-  conflict-glow animation.
+```bash
+npm install
+npm run dev          # http://localhost:5173
+```
 
-> When we build this, read the frontend-design guidance first so it doesn't read
-> as a templated default — the demo's "wow" moment lives here.
+That runs in **mock mode** with bundled data — no backend needed. This is the
+demo safety net.
+
+## Run against the live backend
+
+1. Start Sai's server (single worker, no `--reload`):
+   ```bash
+   uvicorn coherence.server:app --port 8000
+   ```
+2. Point the frontend at it:
+   ```bash
+   cp .env.example .env      # sets VITE_API_BASE=http://localhost:8000
+   npm run dev
+   ```
+3. The header will read `· live`, and Ingest/Detect/Resolve now hit the real
+   endpoints. (Check the Network tab: calls should go to `:8000`.)
+
+CORS is open on the backend, so the `:5173` dev server calls `:8000` directly.
+
+## The flow the UI drives
+
+```
+POST /ingest/{dataset}      → load + build claims
+POST /detect?use_llm=true   → run detection
+GET  /graph                 → nodes + edges (with status)
+GET  /conflicts             → conflicts + precision/recall metrics
+POST /resolve               → pick a winner; loser retracted, source_trust drops
+```
+
+In mock mode these are simulated from `src/data.js` with identical shapes.
+
+## Layout
+
+```
+src/
+  App.jsx         orchestration, chrome, recall/case-status
+  CaseBoard.jsx   the felt-table SVG graph (slips, string, stamps)
+  ConflictLog.jsx the discrepancy docket + resolve controls
+  api.js          mock/live data seam + contract→internal adapters
+  data.js         bundled mock datasets + mockDetect
+  lib.js          time format, d3-force layout, string paths, board dims
+  styles.css      the case-board styling
+```
+
+## Demo notes
+
+- Two cases: **01 — The Missing Groom** (the hook) and **02 — The Agent's
+  Memory** (real-world weight).
+- Toggle **LLM off on Case 02**: recall drops to 67%, because the
+  vegetarian-vs-steak *semantic* conflict is only caught by the gated LLM tier.
+  That's the live proof of the two-tier (deterministic + LLM) detector.
