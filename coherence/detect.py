@@ -1,18 +1,24 @@
-"""Detection: deterministic rules (instant, no LLM) + an optional vector-gated
-semantic pass for cross-predicate conflicts structure can't see."""
+"""
+Detection = tested deterministic core (rules.py) + optional vector-gated semantic
+pass. detect() wraps the pure rule functions with DataPoint persistence, so the
+logic that ships is exactly the logic covered by tests/.
+"""
 from __future__ import annotations
+
 from collections import defaultdict
-from itertools import combinations
+
 from cognee.tasks.storage import add_data_points
-from .models import Claim, Contradiction
+
+from . import rules
 from .gate import VectorGate
 from .llm import judge_contradiction
+from .models import Claim, Contradiction
 
 
 def _d(c: Claim) -> dict:
     return {"id": str(getattr(c, "id", "")), "ref": getattr(c, "ref_id", "") or "",
-            "text": c.text, "subject": c.subject, "predicate": c.predicate,
-            "object": c.object, "valid_from": c.valid_from}
+            "subject": c.subject, "predicate": c.predicate, "object": c.object,
+            "valid_from": c.valid_from, "text": c.text}
 
 
 async def detect(claims: list[Claim], use_llm: bool = False) -> list[Contradiction]:
@@ -20,40 +26,25 @@ async def detect(claims: list[Claim], use_llm: bool = False) -> list[Contradicti
     found: list[Contradiction] = []
     flagged: set[frozenset] = set()
 
-    # ---- Deterministic layer (same subject + predicate) ----
-    groups = defaultdict(list)
-    for c in items:
-        groups[(c["subject"], c["predicate"])].append(c)
+    # ---- deterministic core (pure, unit-tested in tests/test_rules.py) ----
+    for d in rules.find_contradictions(items):
+        found.append(Contradiction(
+            claim_a_id=d["a_id"], claim_b_id=d["b_id"],
+            ref_a=d["a_ref"] or "", ref_b=d["b_ref"] or "",
+            conflict_type="contradiction", confidence=d["confidence"], verdict=d["verdict"]))
+        flagged.add(frozenset((d["a_id"], d["b_id"])))
+        print(f"[CONTRADICTION] {d['verdict']}")
 
-    for (subj, pred), group in groups.items():
-        by_time = defaultdict(list)
-        for c in group:
-            by_time[c["valid_from"]].append(c)
-        for t, same_time in by_time.items():
-            for a, b in combinations(same_time, 2):
-                if a["object"] != b["object"]:
-                    found.append(Contradiction(
-                        claim_a_id=a["id"], claim_b_id=b["id"], ref_a=a["ref"], ref_b=b["ref"],
-                        conflict_type="contradiction", confidence=1.0,
-                        verdict=f"{subj}.{pred} is both '{a['object']}' and '{b['object']}' at {t}."))
-                    flagged.add(frozenset((a["id"], b["id"])))
-                    print(f"[CONTRADICTION] {subj}.{pred}: '{a['object']}' vs '{b['object']}' @ {t}")
+    for d in rules.find_supersessions(items):
+        found.append(Contradiction(
+            claim_a_id=d["older_id"], claim_b_id=d["newer_id"],
+            ref_a=d["older_ref"] or "", ref_b=d["newer_ref"] or "",
+            conflict_type="supersession", confidence=d["confidence"],
+            winner_claim_id=d["newer_id"], verdict=d["verdict"]))
+        flagged.add(frozenset((d["older_id"], d["newer_id"])))
+        print(f"[SUPERSESSION] {d['verdict']}")
 
-        dated = sorted([c for c in group if c["valid_from"]], key=lambda c: c["valid_from"])
-        if len(dated) >= 2:
-            latest = dated[-1]
-            for older in dated[:-1]:
-                if older["object"] != latest["object"] and older["valid_from"] != latest["valid_from"]:
-                    found.append(Contradiction(
-                        claim_a_id=older["id"], claim_b_id=latest["id"],
-                        ref_a=older["ref"], ref_b=latest["ref"],
-                        conflict_type="supersession", confidence=1.0, winner_claim_id=latest["id"],
-                        verdict=f"{subj}.{pred}: '{older['object']}' ({older['valid_from']}) "
-                                f"superseded by '{latest['object']}' ({latest['valid_from']})."))
-                    flagged.add(frozenset((older["id"], latest["id"])))
-                    print(f"[SUPERSESSION] {subj}.{pred}: '{older['object']}' -> '{latest['object']}'")
-
-    # ---- Vector-gated semantic layer (same subject, any predicate) ----
+    # ---- vector-gated semantic pass (cross-predicate residue) ----
     if use_llm:
         gate = VectorGate()
         by_subject = defaultdict(list)
@@ -62,20 +53,20 @@ async def detect(claims: list[Claim], use_llm: bool = False) -> list[Contradicti
         for subj, group in by_subject.items():
             for i, a in enumerate(group):
                 partners = [b for b in group[i + 1:]
-                    if frozenset((a["id"], b["id"])) not in flagged
-                    and a["predicate"] != b["predicate"]]     # LLM owns CROSS-predicate only
+                            if frozenset((a["id"], b["id"])) not in flagged
+                            and a["predicate"] != b["predicate"]]
                 if not partners:
                     continue
                 for b, sim in await gate.close_partners(a, partners):
                     verdict = await judge_contradiction(a, b)
                     if verdict and verdict.get("contradiction"):
                         found.append(Contradiction(
-                            claim_a_id=a["id"], claim_b_id=b["id"], ref_a=a["ref"], ref_b=b["ref"],
-                            conflict_type="semantic", confidence=round(0.6 + 0.4 * sim, 2),
+                            claim_a_id=a["id"], claim_b_id=b["id"],
+                            ref_a=a["ref"], ref_b=b["ref"], conflict_type="semantic",
+                            confidence=round(0.6 + 0.4 * sim, 2),
                             verdict=verdict.get("reason", "Conflicting claims.")))
                         flagged.add(frozenset((a["id"], b["id"])))
-                        print(f"[SEMANTIC] {subj}: '{a['object']}' vs '{b['object']}' "
-                              f"(sim={sim:.2f}) -> {verdict.get('reason','')[:70]}")
+                        print(f"[SEMANTIC] {subj}: '{a['object']}' vs '{b['object']}' (sim={sim:.2f})")
 
     if found:
         await add_data_points(found)
