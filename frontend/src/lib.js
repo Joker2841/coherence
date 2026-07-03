@@ -45,3 +45,20 @@ export function stringPath(pa, pb) {
   const mx = (x1 + x2) / 2, my = (y1 + y2) / 2 + Math.min(28, d * 0.1);
   return { d: `M ${x1} ${y1} Q ${mx} ${my} ${x2} ${y2}`, x1, y1, x2, y2 };
 }
+
+// Fit a claim label to the card: 1 line if it fits, else 2 lines, ellipsis if a
+// single word is too long. Tuned to the card width at the Courier head size.
+export function wrapLabel(s, max = 15) {
+  s = String(s || "");
+  if (s.length <= max) return [s];
+  const words = s.split(" ");
+  if (words.length === 1) return [s.slice(0, max - 1) + "\u2026"];
+  let l1 = "", i = 0;
+  while (i < words.length && (l1 ? l1 + " " + words[i] : words[i]).length <= max) {
+    l1 = l1 ? l1 + " " + words[i] : words[i]; i++;
+  }
+  if (!l1) { l1 = words[0].slice(0, max - 1) + "\u2026"; i = 1; }
+  let l2 = words.slice(i).join(" ");
+  if (l2.length > max) l2 = l2.slice(0, max - 1) + "\u2026";
+  return l2 ? [l1, l2] : [l1];
+}

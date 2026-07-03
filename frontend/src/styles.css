@@ -9,7 +9,7 @@
   --rep:'Courier Prime',ui-monospace,'Courier New',monospace;
   --ui:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   background:#081410; color:#e9efe9; font-family:var(--ui);
-  display:flex; flex-direction:column; min-height:100vh; overflow:hidden;
+  display:flex; flex-direction:column; height:100vh; overflow:hidden;
 }
 .coh *{box-sizing:border-box}
 .coh button{cursor:pointer; font-family:var(--ui)}
@@ -55,7 +55,7 @@
 .ans.lead{color:#e6c987; background:rgba(192,145,47,.1)} .ans.ok{color:#8fe6bd; background:rgba(47,157,107,.12); font-weight:700}
 
 .body{display:flex; flex:1; min-height:0}
-.board{position:relative; flex:1; min-width:0; border-right:1px solid rgba(203,166,92,.14)}
+.board{position:relative; flex:1; min-width:0; min-height:0; border-right:1px solid rgba(203,166,92,.14)}
 .svg{display:block; width:100%; height:100%}
 
 .str{transition:opacity .55s ease} .str.gone{opacity:0}
@@ -146,6 +146,7 @@
 .foot2 .dim{opacity:.7}
 
 @media (max-width:840px){
+  .coh{height:auto; overflow:visible}
   .body{flex-direction:column}
   .board{border-right:none; border-bottom:1px solid rgba(203,166,92,.14); min-height:380px}
   .log{width:100%; max-height:420px}
@@ -175,3 +176,42 @@
 .banner button{border:1px solid rgba(192,145,47,.4); background:transparent; color:#f0d9a8; font-size:11px; padding:4px 10px; border-radius:6px; font-family:var(--rep); cursor:pointer}
 .banner button:hover{border-color:var(--gold)}
 .banner .bx{border:none; font-size:16px; padding:0 6px; line-height:1}
+
+.cleared.moot{color:var(--amber)} .cleared.moot b{color:#e6c987}
+
+/* --- time-travel mode --- */
+.btn.tt{background:#12212c; border-color:#2a4a5e; color:#a9c7d6}
+.btn.tt:hover:not(:disabled){border-color:#3f7aa0}
+.btn.tt.on{background:rgba(203,166,92,.14); border-color:var(--gold); color:var(--gold)}
+
+.tm{display:flex; flex-direction:column; flex:1; min-height:0}
+.tm-belief{display:flex; align-items:baseline; gap:16px; padding:14px 22px; background:rgba(0,0,0,.28); border-bottom:1px solid rgba(203,166,92,.14)}
+.tm-q{font-family:var(--rep); font-size:13px; color:var(--dim)}
+.tm-clock{font-family:var(--disp); font-size:25px; letter-spacing:2px; color:var(--gold)}
+.tm-ans{margin-left:auto; font-family:var(--rep); font-size:16px; padding:5px 14px; border-radius:8px}
+.tm-ans em{font-style:normal; opacity:.75}
+.tm-ans.ok{color:#8fe6bd; background:rgba(47,157,107,.12); font-weight:700}
+.tm-ans.conflict{color:#ef9a95; background:rgba(216,58,51,.1)}
+.tm-ans.none{color:var(--faint)}
+
+.tm-board{position:relative; flex:1; min-height:0}
+.tm-board svg{display:block; width:100%; height:100%}
+.tm-edge{stroke:var(--red); stroke-width:2; stroke-dasharray:5 5; filter:drop-shadow(0 1px 1px rgba(0,0,0,.5)); animation:fadein .3s ease-out}
+.tm-glow{pointer-events:none} .tm-glow.red{animation:breathe 2.8s ease-in-out infinite}
+.tslip{transition:opacity .35s ease}
+.tslip .paper{fill:var(--paper); stroke:var(--paperEdge); stroke-width:1; transition:opacity .3s, fill .3s, stroke .3s}
+.tslip.future{opacity:.15} .tslip.future .paper{stroke-dasharray:3 3}
+.tslip.past{opacity:.42} .tslip.past .paper{fill:#ded3b8}
+.tslip.current .paper{stroke:var(--seal); stroke-width:1.6} .tslip.current .head{fill:#1f6e49}
+.tslip.conflict .paper{stroke:var(--red); fill:#f0ded9} .tslip.conflict .head{fill:#7a231f}
+@media (prefers-reduced-motion: reduce){ .tm-glow.red{animation:none;opacity:.7} .tm-edge{animation:none} }
+
+.tm-scrub{display:flex; align-items:center; gap:16px; padding:16px 26px 26px; border-top:1px solid rgba(203,166,92,.14); background:rgba(0,0,0,.18)}
+.tm-play{flex:none; width:38px; height:38px; border-radius:50%; border:1px solid #2b6347; background:#123527; color:#bff0d6; display:flex; align-items:center; justify-content:center; cursor:pointer}
+.tm-play:hover{border-color:var(--seal)}
+.tm-track{position:relative; flex:1}
+.tm-track input[type=range]{width:100%; accent-color:var(--gold); cursor:pointer; margin:0}
+.tm-ticks{position:relative; height:24px; margin-top:4px}
+.tm-tick{position:absolute; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; white-space:nowrap}
+.tm-tick i{width:1px; height:6px; background:rgba(203,166,92,.45); display:block}
+.tm-tick b{font-family:var(--rep); font-size:8.5px; color:var(--faint); font-weight:400; margin-top:3px}

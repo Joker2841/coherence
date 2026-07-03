@@ -1,4 +1,4 @@
-import { W, H, CW, CH, hash, fmtTime, stringPath } from "./lib.js";
+import { W, H, CW, CH, hash, fmtTime, stringPath, wrapLabel } from "./lib.js";
 
 export default function CaseBoard({ meta, phase, nodes, edges, conflicts, status, resolved, positions, pulse, selected, onSelectConflict }) {
   const disputed = new Set();
@@ -79,7 +79,9 @@ export default function CaseBoard({ meta, phase, nodes, edges, conflicts, status
                 <rect className="paper" x={-CW / 2} y={-CH / 2} width={CW} height={CH} rx="5" filter="url(#slip)" />
                 <rect x={-CW / 2 + 6} y={-CH / 2 + 5} width={CW - 12} height="4" rx="2" fill={stripe} className="stripe" />
                 <text className="eye" x={-CW / 2 + 14} y={-CH / 2 + 24}>{n.subject}.{n.predicate}</text>
-                <text className="head" x={-CW / 2 + 14} y={2}>{n.object}</text>
+                {(() => { const L = wrapLabel(n.object); return L.length === 1
+                  ? <text className="head" x={-CW / 2 + 14} y={2}>{L[0]}</text>
+                  : <text className="head" x={-CW / 2 + 14} y={-6}>{L[0]}<tspan x={-CW / 2 + 14} dy="17">{L[1]}</tspan></text>; })()}
                 <text className="foot" x={-CW / 2 + 14} y={CH / 2 - 13}>{n.source} · {fmtTime(n.time)}</text>
                 {s === "superseded" && <text className="wm" x="0" y="6" textAnchor="middle">SUPERSEDED</text>}
                 {s === "retracted" && (

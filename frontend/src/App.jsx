@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
-import { Search, Play, RotateCcw, Zap, Gavel } from "lucide-react";
+import { Search, Play, RotateCcw, Zap, Gavel, History } from "lucide-react";
 import * as api from "./api.js";
 import { DATASETS } from "./data.js";
 import { runLayout, clamp, W, H } from "./lib.js";
 import CaseBoard from "./CaseBoard.jsx";
 import ConflictLog from "./ConflictLog.jsx";
+import TimeMachine from "./TimeMachine.jsx";
 
 export default function App() {
   const [dsKey, setDsKey] = useState("doug");
@@ -12,6 +13,7 @@ export default function App() {
   const [useLLM, setUseLLM] = useState(true);
   const [busy, setBusy] = useState(false);
   const [solving, setSolving] = useState(false);
+  const [mode, setMode] = useState("case");           // case | time
 
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
@@ -34,7 +36,7 @@ export default function App() {
 
   const reset = () => {
     setPhase("empty"); setNodes([]); setEdges([]); setConflicts([]); setMetrics(null);
-    setPositions({}); setStatus({}); setResolved({}); setSourceTrust({}); setRecallLive(null); setPulse(null); setSelected(null);
+    setPositions({}); setStatus({}); setResolved({}); setSourceTrust({}); setRecallLive(null); setPulse(null); setSelected(null); setMode("case");
   };
   const pick = (k) => { if (k !== dsKey && !busy && !solving) { setDsKey(k); reset(); } };
 
@@ -185,6 +187,7 @@ export default function App() {
             <button className="btn solve" onClick={solveCase} disabled={solving || busy}><Gavel size={13} />Solve case</button>
           )}
           <button className={"toggle" + (useLLM ? " on" : "")} onClick={() => !busy && !solving && setUseLLM((v) => !v)}><Zap size={12} />LLM {useLLM ? "on" : "off"}</button>
+          <button className={"btn tt" + (mode === "time" ? " on" : "")} onClick={() => phase === "detected" && setMode((m) => (m === "time" ? "case" : "time"))} disabled={phase !== "detected"} title="Replay what the memory believed over time"><History size={13} />{mode === "time" ? "Case board" : "Time-travel"}</button>
           <button className="btn ico" onClick={reset} title="New case"><RotateCcw size={13} /></button>
           {busy && <span className="spin" title="working" />}
         </div>
@@ -208,27 +211,33 @@ export default function App() {
         </div>
       )}
 
-      <div className="cover">
-        <div className="cno">CASE No. {meta.no}</div>
-        <div className="ctitle">{meta.label}</div>
-        <div className="cright">
-          <span className="qq">{meta.recall.query}</span>
-          <span className={"stat " + statusWord.toLowerCase()}>{statusWord}</span>
-          <span className={"ans " + ansClass}>{ansText}</span>
-        </div>
-      </div>
+      {mode === "case" ? (
+        <>
+          <div className="cover">
+            <div className="cno">CASE No. {meta.no}</div>
+            <div className="ctitle">{meta.label}</div>
+            <div className="cright">
+              <span className="qq">{meta.recall.query}</span>
+              <span className={"stat " + statusWord.toLowerCase()}>{statusWord}</span>
+              <span className={"ans " + ansClass}>{ansText}</span>
+            </div>
+          </div>
 
-      <div className="body">
-        <CaseBoard
-          meta={meta} phase={phase} nodes={nodes} edges={edges} conflicts={conflicts}
-          status={status} resolved={resolved} positions={positions} pulse={pulse}
-          selected={selected} onSelectConflict={setSelected}
-        />
-        <ConflictLog
-          phase={phase} conflicts={conflicts} resolved={resolved} selected={selected}
-          onSelect={setSelected} onResolve={resolve} nodeById={nodeById} sourceTrust={sourceTrust} status={status}
-        />
-      </div>
+          <div className="body">
+            <CaseBoard
+              meta={meta} phase={phase} nodes={nodes} edges={edges} conflicts={conflicts}
+              status={status} resolved={resolved} positions={positions} pulse={pulse}
+              selected={selected} onSelectConflict={setSelected}
+            />
+            <ConflictLog
+              phase={phase} conflicts={conflicts} resolved={resolved} selected={selected}
+              onSelect={setSelected} onResolve={resolve} nodeById={nodeById} sourceTrust={sourceTrust} status={status}
+            />
+          </div>
+        </>
+      ) : (
+        <TimeMachine nodes={nodes} positions={positions} meta={meta} />
+      )}
 
       <footer className="foot2">
         <span>{effLive ? `live · ${api.apiBase}` : "mock · bundled data"}</span>
