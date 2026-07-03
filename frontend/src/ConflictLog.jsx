@@ -1,4 +1,14 @@
-export default function ConflictLog({ phase, conflicts, resolved, selected, onSelect, onResolve, nodeById }) {
+import { fmtTime } from "./lib.js";
+
+const METHOD = {
+  supersession: "Same subject + predicate, newer timestamp wins — deterministic temporal rule, no LLM.",
+  contradiction: "Same subject, predicate and time but different values — deterministic rule, no LLM.",
+  semantic: "Different predicates that can't both hold — vector-gated, then confirmed by the LLM judge.",
+};
+
+export default function ConflictLog({ phase, conflicts, resolved, selected, onSelect, onResolve, nodeById, sourceTrust }) {
+  const trust = (s) => sourceTrust[s];
+
   return (
     <aside className="log">
       <div className="lh">
@@ -11,6 +21,7 @@ export default function ConflictLog({ phase, conflicts, resolved, selected, onSe
       {phase === "detected" && conflicts.map((c) => {
         const done = !!resolved[c.id];
         const sel = selected === c.id;
+        const na = nodeById[c.a.id], nb = nodeById[c.b.id];
         return (
           <div key={c.id} className={"entry " + c.type + (done ? " done" : "") + (sel ? " sel" : "")} onClick={() => onSelect(sel ? null : c.id)}>
             <div className="etop">
@@ -24,6 +35,24 @@ export default function ConflictLog({ phase, conflicts, resolved, selected, onSe
               <span className="x">×</span>
               <span className={"slipchip" + (done && resolved[c.id] !== c.b.id ? " out" : done ? " keep" : "")}>{c.b.object}<em> {c.b.source}</em></span>
             </div>
+
+            {sel && (
+              <div className="audit">
+                <div className="aq">WHY FLAGGED</div>
+                <div className="aclaim">
+                  <span className="who">{c.a.source}{trust(c.a.source) != null && trust(c.a.source) < 1 && <b className="trust"> reliability {trust(c.a.source).toFixed(2)}</b>}</span>
+                  <span className="atime">{fmtTime(na?.time)}</span>
+                </div>
+                <div className="atext">“{na?.text || c.a.object}”</div>
+                <div className="aclaim">
+                  <span className="who">{c.b.source}{trust(c.b.source) != null && trust(c.b.source) < 1 && <b className="trust"> reliability {trust(c.b.source).toFixed(2)}</b>}</span>
+                  <span className="atime">{fmtTime(nb?.time)}</span>
+                </div>
+                <div className="atext">“{nb?.text || c.b.object}”</div>
+                <div className="amethod">{METHOD[c.type]}</div>
+              </div>
+            )}
+
             {!done ? (
               c.type === "supersession" ? (
                 <button className="act full" onClick={(e) => { e.stopPropagation(); onResolve(c); }}>

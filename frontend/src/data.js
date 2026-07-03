@@ -3,18 +3,18 @@
 
 export const DATASETS = {
   doug: {
-    label: "The Missing Groom", no: "01",
+    label: "The Missing Groom", no: "01", backend: "doug_witnesses",
     blurb: "Four witnesses. One vanished groom. Where was Doug?",
     truth: 6,
     recall: { query: "Where is Doug?", subject: "Doug", predicate: "location" },
     nodes: [
-      { id: "w1_groom",   subject: "Doug", predicate: "role",     object: "the groom",      time: "2025-06-27T10:00:00", source: "Phil",     base: "active" },
-      { id: "w4_caesars", subject: "Doug", predicate: "event",    object: "party @ Caesars", time: "2025-06-27T20:00:00", source: "Alan",     base: "active" },
-      { id: "w2_roof",    subject: "Doug", predicate: "location", object: "hotel roof",      time: "2025-06-27T21:00:00", source: "Phil",     base: "superseded" },
-      { id: "w3_pool",    subject: "Doug", predicate: "location", object: "pool bar",        time: "2025-06-27T21:00:00", source: "Stu",      base: "superseded" },
-      { id: "w6_suite",   subject: "Doug", predicate: "location", object: "hotel suite",     time: "2025-06-27T23:00:00", source: "Mr. Chow", base: "superseded" },
-      { id: "w7_airport", subject: "Doug", predicate: "location", object: "airport",         time: "2025-06-27T23:00:00", source: "Taxi log", base: "superseded" },
-      { id: "w5_chapel",  subject: "Doug", predicate: "location", object: "wedding chapel",  time: "2025-06-28T07:00:00", source: "Stu",      base: "active" },
+      { id: "w1_groom",   subject: "Doug", predicate: "role",     object: "the groom",      text: "Doug is the groom; the wedding is Sunday.",  time: "2025-06-27T10:00:00", source: "Phil",     base: "active" },
+      { id: "w4_caesars", subject: "Doug", predicate: "event",    object: "party @ Caesars", text: "Doug's bachelor party started at Caesars.",  time: "2025-06-27T20:00:00", source: "Alan",     base: "active" },
+      { id: "w2_roof",    subject: "Doug", predicate: "location", object: "hotel roof",      text: "At 9 PM, Doug was on the hotel roof.",        time: "2025-06-27T21:00:00", source: "Phil",     base: "superseded" },
+      { id: "w3_pool",    subject: "Doug", predicate: "location", object: "pool bar",        text: "At 9 PM, Doug was at the pool bar.",          time: "2025-06-27T21:00:00", source: "Stu",      base: "superseded" },
+      { id: "w6_suite",   subject: "Doug", predicate: "location", object: "hotel suite",     text: "Doug never left the hotel suite all night.", time: "2025-06-27T23:00:00", source: "Mr. Chow", base: "superseded" },
+      { id: "w7_airport", subject: "Doug", predicate: "location", object: "airport",         text: "A taxi dropped Doug at the airport at 11 PM.",time: "2025-06-27T23:00:00", source: "Taxi log", base: "superseded" },
+      { id: "w5_chapel",  subject: "Doug", predicate: "location", object: "wedding chapel",  text: "Doug has now been found at the chapel.",      time: "2025-06-28T07:00:00", source: "Stu",      base: "active" },
     ],
     edges: [
       { id: "e1", source: "w2_roof",  target: "w3_pool",    type: "contradicts" },
@@ -46,18 +46,18 @@ export const DATASETS = {
     ],
   },
   agent: {
-    label: "The Agent's Memory", no: "02",
+    label: "The Agent's Memory", no: "02", backend: "agent_memory",
     blurb: "An assistant, many sessions deep. What does it still believe?",
     truth: 3,
     recall: { query: "When is the Q3 review?", subject: "q3_review", predicate: "date" },
     nodes: [
-      { id: "m1_veg",     subject: "user",      predicate: "diet",       object: "vegetarian", time: "2025-03-01T09:00:00", source: "session 12", base: "active" },
-      { id: "m2_steak",   subject: "user",      predicate: "meal_order", object: "steak",      time: "2025-06-20T19:30:00", source: "session 88", base: "active" },
-      { id: "m3_wed",     subject: "q3_review", predicate: "date",       object: "Wednesday",  time: "2025-06-10T11:00:00", source: "session 40", base: "superseded" },
-      { id: "m4_fri",     subject: "q3_review", predicate: "date",       object: "Friday",     time: "2025-06-18T14:00:00", source: "session 57", base: "active" },
-      { id: "m5_sarah",   subject: "user",      predicate: "manager",    object: "Sarah",      time: "2025-01-05T10:00:00", source: "session 15", base: "superseded" },
-      { id: "m6_david",   subject: "user",      predicate: "manager",    object: "David",      time: "2025-06-22T16:00:00", source: "session 90", base: "active" },
-      { id: "m7_morning", subject: "user",      predicate: "prefers",    object: "mornings",   time: "2025-02-01T08:00:00", source: "session 20", base: "active" },
+      { id: "m1_veg",     subject: "user",      predicate: "diet",       object: "vegetarian", text: "The user is vegetarian and avoids all meat.", time: "2025-03-01T09:00:00", source: "session 12", base: "active" },
+      { id: "m2_steak",   subject: "user",      predicate: "meal_order", object: "steak",      text: "The user ordered a medium-rare steak.",       time: "2025-06-20T19:30:00", source: "session 88", base: "active" },
+      { id: "m3_wed",     subject: "q3_review", predicate: "date",       object: "Wednesday",  text: "The Q3 review is scheduled for Wednesday.",   time: "2025-06-10T11:00:00", source: "session 40", base: "superseded" },
+      { id: "m4_fri",     subject: "q3_review", predicate: "date",       object: "Friday",     text: "Update: the Q3 review moved to Friday.",       time: "2025-06-18T14:00:00", source: "session 57", base: "active" },
+      { id: "m5_sarah",   subject: "user",      predicate: "manager",    object: "Sarah",      text: "The user's manager is Sarah.",                time: "2025-01-05T10:00:00", source: "session 15", base: "superseded" },
+      { id: "m6_david",   subject: "user",      predicate: "manager",    object: "David",      text: "After the reorg, the user reports to David.", time: "2025-06-22T16:00:00", source: "session 90", base: "active" },
+      { id: "m7_morning", subject: "user",      predicate: "prefers",    object: "mornings",   text: "The user prefers morning meetings.",          time: "2025-02-01T08:00:00", source: "session 20", base: "active" },
     ],
     edges: [
       { id: "me1", source: "m4_fri",   target: "m3_wed",   type: "supersedes" },
@@ -95,6 +95,5 @@ export function mockDetect(dsKey, useLLM) {
   const P = tp + fp ? tp / (tp + fp) : 0;
   const R = tp + fn ? tp / (tp + fn) : 0;
   const F = P + R ? (2 * P * R) / (P + R) : 0;
-  const metrics = { precision: P, recall: R, f1: F, tp, fp, fn };
-  return { nodes, edges, conflicts, metrics };
+  return { nodes, edges, conflicts, metrics: { precision: P, recall: R, f1: F, tp, fp, fn } };
 }

@@ -152,3 +152,26 @@
   .stats{margin-left:0}
   .cright{margin-left:0; width:100%}
 }
+
+/* --- polish: solve button, busy spinner, audit panel, source trust --- */
+.btn.solve{background:linear-gradient(180deg,#3a2f12,#2c2410); border-color:rgba(203,166,92,.4); color:var(--gold)}
+.btn.solve:hover:not(:disabled){border-color:var(--gold); background:rgba(203,166,92,.14)}
+.spin{width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.18);border-top-color:var(--seal);display:inline-block;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.audit{margin:10px 0; padding:10px 11px; background:rgba(0,0,0,.22); border:1px solid rgba(203,166,92,.12); border-radius:8px}
+.aq{font-family:var(--rep); font-size:8.5px; letter-spacing:2px; color:var(--gold); margin-bottom:8px}
+.aclaim{display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-top:7px}
+.aclaim .who{font-family:var(--rep); font-size:11px; color:#d3dcd3}
+.aclaim .trust{color:var(--amber); font-weight:400; font-size:10px}
+.aclaim .atime{font-family:var(--rep); font-size:9.5px; color:var(--faint); white-space:nowrap}
+.atext{font-family:var(--rep); font-size:11px; color:#9fb0a4; line-height:1.45; font-style:italic; margin-top:2px}
+.amethod{margin-top:10px; font-family:var(--rep); font-size:10px; color:var(--dim); line-height:1.5}
+
+/* --- backend-unreachable banner --- */
+.banner{display:flex; align-items:center; justify-content:space-between; gap:14px; padding:9px 16px;
+  background:rgba(192,145,47,.12); border-bottom:1px solid rgba(192,145,47,.35); color:#f0d9a8; font-family:var(--rep); font-size:11.5px; line-height:1.4}
+.bactions{display:flex; align-items:center; gap:8px; flex:none}
+.banner button{border:1px solid rgba(192,145,47,.4); background:transparent; color:#f0d9a8; font-size:11px; padding:4px 10px; border-radius:6px; font-family:var(--rep); cursor:pointer}
+.banner button:hover{border-color:var(--gold)}
+.banner .bx{border:none; font-size:16px; padding:0 6px; line-height:1}
