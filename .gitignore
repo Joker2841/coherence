@@ -17,3 +17,4 @@ venv/
 *.lancedb/
 *.db
 .anon_id
+.deb
