@@ -18,3 +18,4 @@ venv/
 *.db
 .anon_id
 .deb
+cloudflared.deb
