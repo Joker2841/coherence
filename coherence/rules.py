@@ -1,13 +1,13 @@
 """
-Pure, dependency-free deterministic core: conflict detection, predicate
-canonicalization, and eval scoring. NO cognee / LLM / pydantic imports, so it
-runs anywhere and every metric is unit-testable. detect.py wraps these with
-DataPoint persistence; extract.py imports canon_predicate from here.
+Pure, dependency-free deterministic core: conflict detection (string + numeric-
+aware), predicate canonicalization, eval scoring. NO cognee/LLM/pydantic imports.
+Unit-tested in tests/. detect.py wraps these with DataPoint persistence.
 
 Claims are plain dicts: {id, subject, predicate, object, valid_from, ref?}.
 """
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from itertools import combinations
 
@@ -21,6 +21,9 @@ PREDICATE_CANON = {
     "date": {"date", "scheduled", "day", "when", "meeting date"},
 }
 
+_MULT = {"k": 1e3, "m": 1e6, "b": 1e9, "thousand": 1e3, "million": 1e6, "billion": 1e9}
+_NUM_RE = re.compile(r"^(-?\d+(?:\.\d+)?)\s*(k|m|b|thousand|million|billion)?$")
+
 
 def canon_predicate(pred: str) -> str:
     p = (pred or "").strip().lower()
@@ -30,9 +33,36 @@ def canon_predicate(pred: str) -> str:
     return p
 
 
+def numeric_value(obj) -> float | None:
+    """Parse a numeric quantity from an object string; None if not numeric.
+    Handles currency symbols, thousands commas, %, and k/m/b(illion) suffixes.
+    Alphanumerics like 'B12' or 'us-east' are NOT numbers."""
+    if obj is None:
+        return None
+    s = str(obj).strip().lower()
+    for junk in (",", "$", "€", "£", "%"):
+        s = s.replace(junk, "")
+    s = s.strip()
+    m = _NUM_RE.match(s)
+    if not m:
+        return None
+    val = float(m.group(1))
+    if m.group(2):
+        val *= _MULT[m.group(2)]
+    return val
+
+
+def values_differ(a, b) -> bool:
+    """True if a and b are genuinely different values. Numeric-aware: '$5M' and
+    '$5,000,000' do NOT differ; '$5M' and '$7M' do. Falls back to normalized
+    string comparison for non-numeric values."""
+    va, vb = numeric_value(a), numeric_value(b)
+    if va is not None and vb is not None:
+        return abs(va - vb) > 1e-9 * max(abs(va), abs(vb), 1.0)
+    return str(a).strip().lower() != str(b).strip().lower()
+
+
 def find_contradictions(claims: list[dict]) -> list[dict]:
-    """Same subject+predicate+timestamp, different object => irreducible conflict.
-    Claims with an unknown (None) timestamp are NOT treated as 'same time'."""
     out = []
     groups = defaultdict(list)
     for c in claims:
@@ -42,10 +72,10 @@ def find_contradictions(claims: list[dict]) -> list[dict]:
         for c in group:
             by_time[c.get("valid_from")].append(c)
         for t, same_time in by_time.items():
-            if t is None:                       # unknown time != same time
+            if t is None:
                 continue
             for a, b in combinations(same_time, 2):
-                if a["object"] != b["object"]:
+                if values_differ(a["object"], b["object"]):
                     out.append({
                         "a_id": a["id"], "b_id": b["id"],
                         "a_ref": a.get("ref"), "b_ref": b.get("ref"),
@@ -57,7 +87,6 @@ def find_contradictions(claims: list[dict]) -> list[dict]:
 
 
 def find_supersessions(claims: list[dict]) -> list[dict]:
-    """Latest-timestamp value supersedes earlier different values (same subj+pred)."""
     out = []
     groups = defaultdict(list)
     for c in claims:
@@ -68,7 +97,7 @@ def find_supersessions(claims: list[dict]) -> list[dict]:
             continue
         latest = dated[-1]
         for older in dated[:-1]:
-            if older["object"] != latest["object"] and older["valid_from"] != latest["valid_from"]:
+            if values_differ(older["object"], latest["object"]) and older["valid_from"] != latest["valid_from"]:
                 out.append({
                     "older_id": older["id"], "newer_id": latest["id"],
                     "older_ref": older.get("ref"), "newer_ref": latest.get("ref"),
@@ -81,7 +110,6 @@ def find_supersessions(claims: list[dict]) -> list[dict]:
 
 
 def score(detected_pairs: set, labeled: list[dict]) -> dict:
-    """detected_pairs: set[frozenset(refA,refB)]; labeled: [{a,b,is_contradiction}]."""
     pos = {frozenset((p["a"], p["b"])) for p in labeled if p["is_contradiction"]}
     neg = {frozenset((p["a"], p["b"])) for p in labeled if not p["is_contradiction"]}
     tp, fn = len(detected_pairs & pos), len(pos - detected_pairs)

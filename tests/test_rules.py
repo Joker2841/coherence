@@ -1,4 +1,4 @@
-from coherence import rules
+import coherence.rules as rules
 
 # The 7 curated Doug claims (id, subject, predicate, object, valid_from, ref)
 DOUG = [
@@ -80,3 +80,33 @@ def test_score_perfect_and_penalized():
     with_fp = perfect | {frozenset(("w1_groom", "w4_caesars"))}
     r2 = rules.score(with_fp, labeled)
     assert r2["recall"] == 1.0 and r2["precision"] < 1.0 and r2["fp"] == 1
+
+
+def test_numeric_contradiction_and_equality():
+    same_time = "2024-10-01T00:00:00"
+    claims = [
+        {"id": "5m",  "ref": "5m",  "subject": "Co", "predicate": "revenue", "object": "$5M",        "valid_from": same_time},
+        {"id": "7m",  "ref": "7m",  "subject": "Co", "predicate": "revenue", "object": "$7M",        "valid_from": same_time},
+        {"id": "5mf", "ref": "5mf", "subject": "Co", "predicate": "revenue", "object": "$5,000,000", "valid_from": same_time},
+    ]
+    pairs = {frozenset((c["a_ref"], c["b_ref"])) for c in rules.find_contradictions(claims)}
+    assert frozenset(("5m", "7m")) in pairs       # 5M vs 7M -> conflict
+    assert frozenset(("7m", "5mf")) in pairs      # 7M vs 5M -> conflict
+    assert frozenset(("5m", "5mf")) not in pairs  # 5M == 5,000,000 -> NOT a conflict
+
+
+def test_numeric_supersession():
+    claims = [
+        {"id": "a", "ref": "a", "subject": "P", "predicate": "budget", "object": "$2M", "valid_from": "2024-01-01T00:00:00"},
+        {"id": "b", "ref": "b", "subject": "P", "predicate": "budget", "object": "$3M", "valid_from": "2024-06-01T00:00:00"},
+    ]
+    s = rules.find_supersessions(claims)
+    assert len(s) == 1 and s[0]["newer_ref"] == "b"
+
+
+def test_alphanumeric_not_parsed_as_number():
+    assert rules.numeric_value("B12") is None      # gate, not the number 12
+    assert rules.numeric_value("us-east") is None
+    assert rules.numeric_value("O+") is None
+    assert rules.numeric_value("$5M") == 5_000_000
+    assert rules.numeric_value("99.9") == 99.9

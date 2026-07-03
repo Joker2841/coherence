@@ -1,0 +1,317 @@
+[
+  {
+    "id": "f_rev_5m",
+    "subject": "AcmeCorp",
+    "predicate": "revenue_q3",
+    "object": "$5M",
+    "source": "auditor",
+    "text": "auditor: AcmeCorp revenue_q3 = $5M (2024-10-01)",
+    "time": "2024-10-01T00:00:00"
+  },
+  {
+    "id": "f_rev_7m",
+    "subject": "AcmeCorp",
+    "predicate": "revenue_q3",
+    "object": "$7M",
+    "source": "analyst",
+    "text": "analyst: AcmeCorp revenue_q3 = $7M (2024-10-01)",
+    "time": "2024-10-01T00:00:00"
+  },
+  {
+    "id": "f_rev_5m_fmt",
+    "subject": "AcmeCorp",
+    "predicate": "revenue_q3",
+    "object": "$5,000,000",
+    "source": "filing",
+    "text": "filing: AcmeCorp revenue_q3 = $5,000,000 (2024-10-01)",
+    "time": "2024-10-01T00:00:00"
+  },
+  {
+    "id": "f_hq_boston",
+    "subject": "AcmeCorp",
+    "predicate": "headquarters",
+    "object": "Boston",
+    "source": "record",
+    "text": "record: AcmeCorp headquarters = Boston (2020-01-01)",
+    "time": "2020-01-01T00:00:00"
+  },
+  {
+    "id": "f_hq_austin",
+    "subject": "AcmeCorp",
+    "predicate": "headquarters",
+    "object": "Austin",
+    "source": "record",
+    "text": "record: AcmeCorp headquarters = Austin (2023-01-01)",
+    "time": "2023-01-01T00:00:00"
+  },
+  {
+    "id": "f_ceo_alice",
+    "subject": "AcmeCorp",
+    "predicate": "ceo",
+    "object": "Alice",
+    "source": "record",
+    "text": "record: AcmeCorp ceo = Alice (2021-01-01)",
+    "time": "2021-01-01T00:00:00"
+  },
+  {
+    "id": "f_ceo_bob",
+    "subject": "AcmeCorp",
+    "predicate": "ceo",
+    "object": "Bob",
+    "source": "record",
+    "text": "record: AcmeCorp ceo = Bob (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "f_emp_500a",
+    "subject": "AcmeCorp",
+    "predicate": "employee_count",
+    "object": "500",
+    "source": "hr",
+    "text": "hr: AcmeCorp employee_count = 500 (2023-01-01)",
+    "time": "2023-01-01T00:00:00"
+  },
+  {
+    "id": "f_emp_500b",
+    "subject": "AcmeCorp",
+    "predicate": "employee_count",
+    "object": "500",
+    "source": "hr",
+    "text": "hr: AcmeCorp employee_count = 500 (2023-06-01)",
+    "time": "2023-06-01T00:00:00"
+  },
+  {
+    "id": "f_emp_650",
+    "subject": "AcmeCorp",
+    "predicate": "employee_count",
+    "object": "650",
+    "source": "hr",
+    "text": "hr: AcmeCorp employee_count = 650 (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "m_blood_o",
+    "subject": "patient_017",
+    "predicate": "blood_type",
+    "object": "O+",
+    "source": "chartA",
+    "text": "chartA: patient_017 blood_type = O+ (2024-01-05)",
+    "time": "2024-01-05T00:00:00"
+  },
+  {
+    "id": "m_blood_a",
+    "subject": "patient_017",
+    "predicate": "blood_type",
+    "object": "A+",
+    "source": "chartB",
+    "text": "chartB: patient_017 blood_type = A+ (2024-01-05)",
+    "time": "2024-01-05T00:00:00"
+  },
+  {
+    "id": "m_dose_500",
+    "subject": "patient_017",
+    "predicate": "dosage_drugx",
+    "object": "500",
+    "source": "rx",
+    "text": "rx: patient_017 dosage_drugx = 500 (2024-01-10)",
+    "time": "2024-01-10T00:00:00"
+  },
+  {
+    "id": "m_dose_250",
+    "subject": "patient_017",
+    "predicate": "dosage_drugx",
+    "object": "250",
+    "source": "rx",
+    "text": "rx: patient_017 dosage_drugx = 250 (2024-03-10)",
+    "time": "2024-03-10T00:00:00"
+  },
+  {
+    "id": "m_doc_lee_a",
+    "subject": "patient_017",
+    "predicate": "attending",
+    "object": "Dr. Lee",
+    "source": "roster",
+    "text": "roster: patient_017 attending = Dr. Lee (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "m_doc_lee_b",
+    "subject": "patient_017",
+    "predicate": "attending",
+    "object": "Dr. Lee",
+    "source": "roster",
+    "text": "roster: patient_017 attending = Dr. Lee (2024-02-01)",
+    "time": "2024-02-01T00:00:00"
+  },
+  {
+    "id": "u_mgr_sarah",
+    "subject": "user",
+    "predicate": "manager",
+    "object": "Sarah",
+    "source": "hr",
+    "text": "hr: user manager = Sarah (2025-01-01)",
+    "time": "2025-01-01T00:00:00"
+  },
+  {
+    "id": "u_mgr_david",
+    "subject": "user",
+    "predicate": "manager",
+    "object": "David",
+    "source": "hr",
+    "text": "hr: user manager = David (2025-06-01)",
+    "time": "2025-06-01T00:00:00"
+  },
+  {
+    "id": "u_mtg_wed",
+    "subject": "user",
+    "predicate": "q3_meeting",
+    "object": "Wednesday",
+    "source": "cal",
+    "text": "cal: user q3_meeting = Wednesday (2025-06-10)",
+    "time": "2025-06-10T00:00:00"
+  },
+  {
+    "id": "u_mtg_fri",
+    "subject": "user",
+    "predicate": "q3_meeting",
+    "object": "Friday",
+    "source": "cal",
+    "text": "cal: user q3_meeting = Friday (2025-06-18)",
+    "time": "2025-06-18T00:00:00"
+  },
+  {
+    "id": "u_city_den_a",
+    "subject": "user",
+    "predicate": "home_city",
+    "object": "Denver",
+    "source": "profile",
+    "text": "profile: user home_city = Denver (2023-01-01)",
+    "time": "2023-01-01T00:00:00"
+  },
+  {
+    "id": "u_city_den_b",
+    "subject": "user",
+    "predicate": "home_city",
+    "object": "Denver",
+    "source": "profile",
+    "text": "profile: user home_city = Denver (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "l_stat_ontime",
+    "subject": "flight_aa100",
+    "predicate": "status",
+    "object": "on time",
+    "source": "boardA",
+    "text": "boardA: flight_aa100 status = on time (2024-05-01)",
+    "time": "2024-05-01T08:00:00"
+  },
+  {
+    "id": "l_stat_delayed",
+    "subject": "flight_aa100",
+    "predicate": "status",
+    "object": "delayed",
+    "source": "boardB",
+    "text": "boardB: flight_aa100 status = delayed (2024-05-01)",
+    "time": "2024-05-01T08:00:00"
+  },
+  {
+    "id": "l_gate_b12",
+    "subject": "flight_aa100",
+    "predicate": "gate",
+    "object": "B12",
+    "source": "sys",
+    "text": "sys: flight_aa100 gate = B12 (2024-05-01)",
+    "time": "2024-05-01T07:00:00"
+  },
+  {
+    "id": "l_gate_b15",
+    "subject": "flight_aa100",
+    "predicate": "gate",
+    "object": "B15",
+    "source": "sys",
+    "text": "sys: flight_aa100 gate = B15 (2024-05-01)",
+    "time": "2024-05-01T09:00:00"
+  },
+  {
+    "id": "p_bud_2m",
+    "subject": "project_apollo",
+    "predicate": "budget",
+    "object": "$2M",
+    "source": "pmo",
+    "text": "pmo: project_apollo budget = $2M (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "p_bud_2m_fmt",
+    "subject": "project_apollo",
+    "predicate": "budget",
+    "object": "$2,000,000",
+    "source": "finance",
+    "text": "finance: project_apollo budget = $2,000,000 (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "p_bud_3m",
+    "subject": "project_apollo",
+    "predicate": "budget",
+    "object": "$3M",
+    "source": "pmo",
+    "text": "pmo: project_apollo budget = $3M (2024-06-01)",
+    "time": "2024-06-01T00:00:00"
+  },
+  {
+    "id": "s_reg_east",
+    "subject": "server_prod",
+    "predicate": "region",
+    "object": "us-east",
+    "source": "infra",
+    "text": "infra: server_prod region = us-east (2023-01-01)",
+    "time": "2023-01-01T00:00:00"
+  },
+  {
+    "id": "s_reg_west",
+    "subject": "server_prod",
+    "predicate": "region",
+    "object": "us-west",
+    "source": "infra",
+    "text": "infra: server_prod region = us-west (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "s_up_999",
+    "subject": "server_prod",
+    "predicate": "uptime_pct",
+    "object": "99.9",
+    "source": "monA",
+    "text": "monA: server_prod uptime_pct = 99.9 (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "s_up_995",
+    "subject": "server_prod",
+    "predicate": "uptime_pct",
+    "object": "99.5",
+    "source": "monB",
+    "text": "monB: server_prod uptime_pct = 99.5 (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "s_own_blue",
+    "subject": "server_prod",
+    "predicate": "owner",
+    "object": "team-blue",
+    "source": "cmdb",
+    "text": "cmdb: server_prod owner = team-blue (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  },
+  {
+    "id": "s_own_green",
+    "subject": "server_prod",
+    "predicate": "owner",
+    "object": "team-green",
+    "source": "cmdb",
+    "text": "cmdb: server_prod owner = team-green (2024-01-01)",
+    "time": "2024-01-01T00:00:00"
+  }
+]
