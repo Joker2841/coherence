@@ -215,3 +215,45 @@
 .tm-tick{position:absolute; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center; white-space:nowrap}
 .tm-tick i{width:1px; height:6px; background:rgba(203,166,92,.45); display:block}
 .tm-tick b{font-family:var(--rep); font-size:8.5px; color:var(--faint); font-weight:400; margin-top:3px}
+
+/* --- time-travel: arriving line, current tick, speed --- */
+.tm-arrive{display:flex; align-items:center; flex-wrap:wrap; padding:8px 22px 11px; font-family:var(--rep); font-size:11.5px; color:var(--dim); background:rgba(0,0,0,.28); border-bottom:1px solid rgba(203,166,92,.14)}
+.tm-arrow{color:var(--seal); margin-right:2px}
+.tm-arrive b{color:#cfd8cf; font-weight:400}
+.tm-dot{color:var(--faint); margin:0 8px}
+.tm-none{color:var(--faint)}
+.tm-tick.on i{background:var(--gold); height:9px}
+.tm-tick.on b{color:var(--gold); font-weight:700}
+.tm-speed{flex:none; display:flex; gap:3px; background:#0c1c14; border:1px solid #1e3a2b; border-radius:8px; padding:2px}
+.spd{border:none; background:transparent; color:var(--dim); font-family:var(--rep); font-size:11px; padding:5px 9px; border-radius:6px; cursor:pointer}
+.spd:hover{color:#cfd8cf}
+.spd.on{background:#163224; color:var(--gold)}
+
+/* speed control lifted onto its own row above the track (clears tick labels) */
+.tm-scrub{flex-direction:column; align-items:stretch; gap:8px; padding:12px 24px 22px}
+.tm-speedbar{display:flex; align-items:center; justify-content:flex-end; gap:8px}
+.tm-speedlbl{font-family:var(--rep); font-size:10px; color:var(--faint); text-transform:uppercase; letter-spacing:.5px}
+.tm-scrub-row{display:flex; align-items:center; gap:16px}
+
+/* ===== premium polish pass (additive, non-structural) ===== */
+/* cinematic vignette on the felt so cards pop toward the viewer */
+.board::after,.tm-board::after{content:""; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(130% 115% at 50% 40%, transparent 58%, rgba(0,0,0,.34) 100%)}
+.overlay{z-index:3} .legend{z-index:2}
+
+/* metrics badge reads like a verdict readout */
+.stats{box-shadow:inset 0 1px 0 rgba(203,166,92,.14), 0 3px 10px rgba(0,0,0,.28)}
+.stats b{text-shadow:0 0 12px rgba(47,157,107,.4)}
+.stats b.w{text-shadow:0 0 12px rgba(192,145,47,.4)}
+
+/* controls: smooth, subtle lift on hover */
+.btn,.toggle,.segbtn{transition:border-color .18s ease, background .18s ease, color .18s ease, transform .12s ease, box-shadow .18s ease}
+.btn:hover:not(:disabled),.toggle:hover{transform:translateY(-1px)}
+.btn.go:hover:not(:disabled){box-shadow:0 4px 16px rgba(47,157,107,.25)}
+
+/* marquee headings: a hint of depth */
+.logo,.ctitle,.ovt,.tm-clock{text-shadow:0 1px 0 rgba(0,0,0,.4)}
+
+/* docket entries: soft lift */
+.entry{box-shadow:0 1px 3px rgba(0,0,0,.2); transition:border-color .2s, transform .12s, box-shadow .2s}
+.entry:hover{box-shadow:0 4px 12px rgba(0,0,0,.3)}
