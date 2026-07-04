@@ -1,0 +1,6 @@
+PATIENT 017 — Nursing Handoff Note (partially legible)
+
+Chart A lists the patient's blood type as O+. Chart B, transferred from the other
+hospital, records A+ — please flag this, it's a safety issue. Attending physician
+is Dr. Lee. The current order for Drug X is 500 mg daily. Patient spent ten
+minutes asking about the cafeteria menu (it's meatloaf on Tuesday).

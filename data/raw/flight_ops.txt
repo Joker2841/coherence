@@ -1,0 +1,7 @@
+OPS LOG — Flight AA100 — May 1
+
+07:00 — Gate posted as B12.
+08:00 — Board A shows the flight ON TIME. Board B (the mobile app) shows it
+DELAYED at the same moment — conflicting displays, passengers are confused.
+09:00 — Gate reassigned to B15.
+Note: someone lost a stuffed tiger at security. Again.

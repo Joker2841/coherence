@@ -1,9 +1,8 @@
 """
-End-to-end extraction: messy document -> structured claims.
-
-An LLM pulls atomic (source, subject, predicate, object, time) claims out of
-noisy free text; a canonicalization pass forces predicate CONSISTENCY. The
-deterministic engine is unchanged; this is a measured front layer.
+End-to-end extraction: messy document -> structured claims, each attributed to
+the PRIMARY ENTITY it concerns (not the reporter, not the metric name). This
+alignment fixes both the eval and downstream detection (consistent subjects let
+conflicting claims group). Deterministic engine unchanged; measured front layer.
 """
 from __future__ import annotations
 
@@ -27,37 +26,36 @@ class Extraction(BaseModel):
     claims: list[ExtractedClaim]
 
 
-_SYSTEM = ("You extract atomic factual claims from messy, noisy text. Extract the "
-           "underlying assertion even when it is phrased indirectly or emphatically; "
-           "skip only true noise (chatter, opinions, irrelevant detail).")
+_SYSTEM = ("You extract atomic factual claims from messy text and attribute each to "
+           "the PRIMARY ENTITY it concerns (a person, company, patient, flight, "
+           "project) -- not the reporter and not the metric. Skip content not about "
+           "that entity.")
 
 _PROMPT = """From the document below, extract every atomic factual claim as
 (source, subject, predicate, object, time).
 
-RULES:
-- One claim = one subject + one attribute + one value. Split compound sentences.
-- source = who asserts it (a named person, or a log). Use "unknown" if unstated.
-- predicate = the KIND of attribute, NORMALIZED. Use the SAME predicate for the
-  same kind of fact. Every physical-location fact -> "location". A person's
-  job/title -> "role". A scheduled happening/party -> "event". Do NOT invent
-  synonyms like "whereabouts", "position", "spotted", "was at" -- collapse them
-  all to one canonical predicate.
-- PRESENCE COUNTS AS LOCATION, even when phrased indirectly. Convert negation or
-  duration into the positive location claim:
-    "X never left Y"  ->  X.location = Y
-    "X stayed at Y all night" / "X remained in Y"  ->  X.location = Y
-- time = ISO 8601 (YYYY-MM-DDTHH:MM:SS) if a time is stated or implied; use the
-  document's date context to resolve "9 PM" to a full timestamp; else null.
-- Strong wording ("insisted", "swears", "repeatedly") does NOT make a statement
-  noise -- extract the underlying factual claim. IGNORE only real noise: side
-  chatter, hedges, opinions, irrelevant detail.
+STEP 1 - Identify the PRIMARY ENTITY the document tracks (usually named in the
+header/title: a person, company, patient, flight, project).
 
-EXAMPLES (illustrative):
-- "Maria insists she never left the office that evening."
-   -> {{"source":"Maria","subject":"Maria","predicate":"location","object":"the office","time":null,"text":"never left the office that evening"}}
-- "Dispatch shows the van was spotted at the depot at 3 PM on May 2, 2024."
-   -> {{"source":"Dispatch","subject":"the van","predicate":"location","object":"the depot","time":"2024-05-02T15:00:00","text":"van spotted at the depot at 3 PM"}}
-- "He rambled about the weather for a while."  ->  ignore (noise, not a checkable fact)
+RULES:
+- SUBJECT = the primary entity the fact is ABOUT -- never the reporter, never the
+  metric name. Attribute facts to that entity unless a fact is clearly about a
+  different entity. Study these carefully:
+    "the auditor put Q3 revenue at $5M"  -> subject=<Company>, predicate=revenue, object=$5M, source=auditor
+    "Bob has served as CEO since 2024"   -> subject=<Company>, predicate=ceo, object=Bob   (NOT subject=Bob)
+    "Headcount reached 650"              -> subject=<Company>, predicate=employee_count, object=650  (NOT subject=Headcount)
+    "Board A shows the flight delayed"   -> subject=<Flight>, predicate=status, object=delayed, source=Board A  (NOT subject=Board A)
+    "David is the project manager"       -> subject=<Project>, predicate=manager, object=David  (NOT subject=David)
+- source = who reported it (person, board, chart, log). Reporters go HERE, never in
+  subject. Use "unknown" if unstated.
+- predicate = the KIND of attribute, normalized and CONSISTENT (all physical-location
+  facts -> "location"; do not invent synonyms).
+- PRESENCE via negation/duration is a location: "X never left Y" -> X.location = Y.
+- object = the value of the attribute.
+- time = ISO 8601 (YYYY-MM-DDTHH:MM:SS) if stated or implied by the document's date
+  context, else null.
+- IGNORE anything not about the primary entity: side chatter, lost tigers, cafeteria
+  menus, broken espresso machines, catering threads.
 
 Return JSON: {{"claims": [{{"source","subject","predicate","object","time","text"}}]}}
 

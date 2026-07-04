@@ -1,0 +1,5 @@
+Subject: Apollo status — quick sync
+
+Team — Project Apollo's budget is $2M (finance has it logged as $2,000,000, which
+is the same number). The deployment region is us-east. David is the project
+manager. Kickoff is Friday. Please stop replying-all about the offsite catering.
