@@ -1,0 +1,5 @@
+[
+  {"id": "g_blood_o", "subject": "patient_017", "predicate": "blood_type", "object": "O+", "source": "Chart A", "time": "2024-01-05T09:00:00", "text": "Chart A records patient_017 blood type as O+."},
+  {"id": "g_blood_a", "subject": "patient_017", "predicate": "blood_type", "object": "A+", "source": "Chart B", "time": "2024-01-05T09:00:00", "text": "Chart B (transferred from another hospital) records patient_017 blood type as A+."},
+  {"id": "g_attending", "subject": "patient_017", "predicate": "attending", "object": "Dr. Lee", "source": "roster", "time": "2024-01-05T08:00:00", "text": "Attending physician for patient_017 is Dr. Lee."}
+]
