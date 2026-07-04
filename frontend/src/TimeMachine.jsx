@@ -9,36 +9,33 @@ function fmtFull(ms) {
   let h = d.getHours(); const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
   return `${MONTHS[d.getMonth()]} ${d.getDate()} · ${h}:${String(d.getMinutes()).padStart(2, "0")} ${ap}`;
 }
-const shortT = (ms) => { const d = new Date(ms); let h = d.getHours(); const ap = h >= 12 ? "p" : "a"; h = h % 12 || 12; return `${MONTHS[d.getMonth()]} ${d.getDate()} ${h}${ap}`; };
 
 export default function TimeMachine({ nodes, positions, meta }) {
-  const times = useMemo(() => nodes.map((n) => parse(n.time)).filter((t) => !isNaN(t)), [nodes]);
-  const tMin = times.length ? Math.min(...times) : 0;
-  const tMax = times.length ? Math.max(...times) : 1;
-  const span = tMax - tMin || 1;
-  const [time, setTime] = useState(tMax);
+  // Advance by discrete memory events (distinct timestamps), not clock-time —
+  // evenly spaced, so every state holds and every transition is visible.
+  const events = useMemo(
+    () => [...new Set(nodes.map((n) => parse(n.time)).filter((t) => !isNaN(t)))].sort((a, b) => a - b),
+    [nodes]
+  );
+  const N = events.length;
+  const [idx, setIdx] = useState(Math.max(0, N - 1));
   const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);            // 0.5 | 1 | 2
+  const dwell = 1400 / speed;
 
-  useEffect(() => { setTime(tMax); setPlaying(false); }, [tMax, tMin]);
+  useEffect(() => { setIdx(Math.max(0, N - 1)); setPlaying(false); }, [N]);
 
-  // auto-play sweep from start to end (~7s)
+  // step-and-hold playback: hold each event for `dwell`, then advance
   useEffect(() => {
     if (!playing) return;
-    let raf;
-    const startWall = performance.now();
-    const startVal = time >= tMax ? tMin : time;
-    const dist = tMax - startVal || 1;
-    const step = (now) => {
-      const p = Math.min(1, (now - startWall) / 7000);
-      setTime(startVal + dist * p);
-      if (p < 1) raf = requestAnimationFrame(step); else setPlaying(false);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing]);
+    if (idx >= N - 1) { setPlaying(false); return; }
+    const t = setTimeout(() => setIdx((i) => Math.min(N - 1, i + 1)), dwell);
+    return () => clearTimeout(t);
+  }, [playing, idx, dwell, N]);
 
-  // belief for the case's question at `time`
+  const time = events[idx] ?? 0;
+
+  // belief for the case's question at this moment
   const belief = useMemo(() => {
     const { subject, predicate } = meta.recall;
     const known = nodes.filter((n) => n.subject === subject && n.predicate === predicate && parse(n.time) <= time);
@@ -48,7 +45,7 @@ export default function TimeMachine({ nodes, positions, meta }) {
     return cur.length > 1 ? { state: "conflict", claims: cur } : { state: "confident", claim: cur[0] };
   }, [nodes, time, meta]);
 
-  // per-node timeline status + current conflict pairs
+  // per-node status + current same-time conflict pairs
   const { statusById, pairs } = useMemo(() => {
     const st = {}; const pairs = []; const groups = {};
     nodes.forEach((n) => { const k = n.subject + "." + n.predicate; if (!groups[k]) groups[k] = []; groups[k].push(n); });
@@ -67,13 +64,22 @@ export default function TimeMachine({ nodes, positions, meta }) {
     return { statusById: st, pairs };
   }, [nodes, time]);
 
-  const distinctTimes = useMemo(() => [...new Set(times)].sort((a, b) => a - b), [times]);
-  const pctOf = (t) => ((t - tMin) / span) * 100;
+  const arriving = useMemo(() => nodes.filter((n) => parse(n.time) === time), [nodes, time]);
+
+  // tick labels: show the date only when it changes, else just the time
+  const labels = useMemo(() => events.map((t, i) => {
+    const d = new Date(t); let h = d.getHours(); const ap = h >= 12 ? "p" : "a"; h = h % 12 || 12;
+    const sameDay = i > 0 && new Date(events[i - 1]).toDateString() === d.toDateString();
+    return sameDay ? `${h}${ap}` : `${MONTHS[d.getMonth()]} ${d.getDate()} ${h}${ap}`;
+  }), [events]);
+  const pctOf = (i) => (N > 1 ? (i / (N - 1)) * 100 : 50);
 
   const beliefText = belief.state === "none" ? "no record yet"
     : belief.state === "conflict" ? belief.claims.map((c) => c.object).join("  vs  ")
     : belief.claim.object;
   const beliefClass = belief.state === "conflict" ? "conflict" : belief.state === "confident" ? "ok" : "none";
+
+  const play = () => { if (playing) { setPlaying(false); return; } if (idx >= N - 1) setIdx(0); setPlaying(true); };
 
   return (
     <div className="tm">
@@ -84,6 +90,12 @@ export default function TimeMachine({ nodes, positions, meta }) {
           {belief.state === "conflict" && <em>conflicted — </em>}{beliefText}
         </span>
       </div>
+      <div className="tm-arrive">
+        <span className="tm-arrow">▸</span> recorded now:&nbsp;
+        {arriving.length ? arriving.map((a, i) => (
+          <span key={a.id}>{i > 0 && <span className="tm-dot">·</span>}<b>{a.source}</b> {a.object}</span>
+        )) : <span className="tm-none">—</span>}
+      </div>
 
       <div className="tm-board">
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
@@ -91,8 +103,9 @@ export default function TimeMachine({ nodes, positions, meta }) {
             <radialGradient id="tfelt" cx="42%" cy="30%" r="90%">
               <stop offset="0%" stopColor="#123a2b" /><stop offset="55%" stopColor="#0d2a1f" /><stop offset="100%" stopColor="#071710" />
             </radialGradient>
-            <filter id="tshadow" x="-30%" y="-30%" width="160%" height="180%">
-              <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#000" floodOpacity=".4" />
+            <filter id="tshadow" x="-40%" y="-40%" width="180%" height="210%">
+              <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000" floodOpacity=".4" />
+              <feDropShadow dx="0" dy="7" stdDeviation="9" floodColor="#000" floodOpacity=".4" />
             </filter>
             <radialGradient id="tRed"><stop offset="0%" stopColor="var(--red)" stopOpacity=".5" /><stop offset="72%" stopColor="var(--red)" stopOpacity="0" /></radialGradient>
             <radialGradient id="tGrn"><stop offset="0%" stopColor="var(--seal)" stopOpacity=".38" /><stop offset="72%" stopColor="var(--seal)" stopOpacity="0" /></radialGradient>
@@ -135,16 +148,26 @@ export default function TimeMachine({ nodes, positions, meta }) {
       </div>
 
       <div className="tm-scrub">
-        <button className="tm-play" onClick={() => setPlaying((v) => !v)} title={playing ? "Pause" : "Play"}>
-          {playing ? <Pause size={16} /> : <Play size={16} />}
-        </button>
-        <div className="tm-track">
-          <input type="range" min={tMin} max={tMax} step={Math.max(1, Math.round(span / 500))} value={time}
-            onChange={(e) => { setPlaying(false); setTime(Number(e.target.value)); }} />
-          <div className="tm-ticks">
-            {distinctTimes.map((t) => (
-              <span key={t} className="tm-tick" style={{ left: pctOf(t) + "%" }}><i /><b>{shortT(t)}</b></span>
+        <div className="tm-speedbar">
+          <span className="tm-speedlbl">speed</span>
+          <div className="tm-speed">
+            {[0.5, 1, 2].map((s) => (
+              <button key={s} className={"spd" + (speed === s ? " on" : "")} onClick={() => setSpeed(s)}>{s}×</button>
             ))}
+          </div>
+        </div>
+        <div className="tm-scrub-row">
+          <button className="tm-play" onClick={play} title={playing ? "Pause" : "Play"}>
+            {playing ? <Pause size={16} /> : <Play size={16} />}
+          </button>
+          <div className="tm-track">
+            <input type="range" min={0} max={Math.max(0, N - 1)} step={1} value={idx}
+              onChange={(e) => { setPlaying(false); setIdx(Number(e.target.value)); }} />
+            <div className="tm-ticks">
+              {events.map((t, i) => (
+                <span key={t} className={"tm-tick" + (i === idx ? " on" : "")} style={{ left: pctOf(i) + "%" }}><i /><b>{labels[i]}</b></span>
+              ))}
+            </div>
           </div>
         </div>
       </div>

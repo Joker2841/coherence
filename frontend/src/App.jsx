@@ -149,20 +149,25 @@ export default function App() {
   }, [nodes, status, meta]);
 
   const allResolved = phase === "detected" && conflicts.length > 0 && Object.keys(resolved).length === conflicts.length;
-  const solved = phase === "detected" && (recallLive ? !recallLive.conflicted : allResolved);
+  const solved = allResolved; // SOLVED = every flagged discrepancy has been cleared
   const statusWord = phase === "empty" ? "—" : phase === "ingested" ? "OPEN" : solved ? "SOLVED" : "OPEN";
   const pct = (x) => Math.round((x || 0) * 100);
 
-  // answer cell: prefer the live /recall answer, else derive client-side
+  // answer cell: once SOLVED, show the reconciled answer; before that, show the
+  // current belief — a temporal "leading" value, or "conflicting" when truly ambiguous.
   let ansClass = "muted", ansText = "";
   if (phase === "empty") ansText = "ingest to open the case";
   else if (phase === "ingested") ansText = "run detection…";
-  else if (recallLive) {
-    if (recallLive.conflicted) { ansClass = "bad"; const n = recallLive.candidates?.length; ansText = (n > 1 ? n + " " : "") + "conflicting accounts"; }
-    else { ansClass = "ok"; ansText = recallLive.answer || "—"; }
-  } else if (recall.length === 1) { ansClass = allResolved ? "ok" : "lead"; ansText = allResolved ? recall[0].object : "leading: " + recall[0].object; }
-  else if (recall.length === 0) { ansClass = "muted"; ansText = "—"; }
-  else { ansClass = "bad"; ansText = recall.length + " conflicting accounts"; }
+  else if (solved) {
+    ansClass = "ok";
+    ansText = recallLive?.answer || (recall.length === 1 ? recall[0].object : "resolved");
+  } else {
+    const conflicted = recallLive ? recallLive.conflicted : recall.length !== 1;
+    const answer = recallLive ? recallLive.answer : (recall.length === 1 ? recall[0].object : null);
+    const nCand = recallLive ? recallLive.candidates?.length : recall.length;
+    if (conflicted || !answer) { ansClass = "bad"; ansText = (nCand > 1 ? nCand + " " : "") + "conflicting accounts"; }
+    else { ansClass = "lead"; ansText = "leading: " + answer; }
+  }
 
   return (
     <div className="coh">

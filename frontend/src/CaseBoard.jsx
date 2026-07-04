@@ -29,8 +29,9 @@ export default function CaseBoard({ meta, phase, nodes, edges, conflicts, status
           <marker id="tip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
             <path d="M0,1 L9,5 L0,9" fill="none" stroke="var(--amber)" strokeWidth="1.6" />
           </marker>
-          <filter id="slip" x="-30%" y="-30%" width="160%" height="180%">
-            <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#000" floodOpacity=".45" />
+          <filter id="slip" x="-40%" y="-40%" width="180%" height="210%">
+            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor="#000" floodOpacity=".4" />
+            <feDropShadow dx="0" dy="7" stdDeviation="9" floodColor="#000" floodOpacity=".4" />
           </filter>
           <radialGradient id="gRed"><stop offset="0%" stopColor="var(--red)" stopOpacity=".5" /><stop offset="72%" stopColor="var(--red)" stopOpacity="0" /></radialGradient>
           <radialGradient id="gGreen"><stop offset="0%" stopColor="var(--seal)" stopOpacity=".62" /><stop offset="72%" stopColor="var(--seal)" stopOpacity="0" /></radialGradient>
