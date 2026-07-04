@@ -1,10 +1,7 @@
 """
-Showcase: detection as a native Cognee memify pipeline.
+Showcase: detection as a native Cognee memify pipeline (data-fed).
 
     python scripts/run_memify.py [doug_witnesses|agent_memory|eval_suite]
-
-Ingests via add_data_points, then runs detect_via_memify() -- the same tested
-rules, orchestrated by cognee.memify() extraction+enrichment Tasks.
 """
 import asyncio
 import json
@@ -24,9 +21,9 @@ DATA = Path(__file__).resolve().parent.parent / "data"
 async def main(dataset: str):
     await cognee.prune.prune_data()
     await cognee.prune.prune_system(metadata=True)
-    await ingest_statements(json.loads((DATA / f"{dataset}.json").read_text()))
+    claims = await ingest_statements(json.loads((DATA / f"{dataset}.json").read_text()))
     print(f"\n=== detection via cognee.memify() Task pipeline ({dataset}) ===")
-    await detect_via_memify()
+    await detect_via_memify(claims)
 
 
 if __name__ == "__main__":
