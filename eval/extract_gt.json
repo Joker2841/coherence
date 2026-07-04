@@ -1,0 +1,38 @@
+{
+  "doug_raw.txt": [
+    {"subject": "Doug", "predicate": "role", "object": "groom"},
+    {"subject": "Doug", "predicate": "location", "object": "hotel roof"},
+    {"subject": "Doug", "predicate": "location", "object": "pool bar"},
+    {"subject": "Doug", "predicate": "event", "object": "bachelor party at Caesars"},
+    {"subject": "Doug", "predicate": "location", "object": "wedding chapel"},
+    {"subject": "Doug", "predicate": "location", "object": "hotel suite"},
+    {"subject": "Doug", "predicate": "location", "object": "airport"}
+  ],
+  "acme_memo.txt": [
+    {"subject": "AcmeCorp", "predicate": "revenue", "object": "$5M"},
+    {"subject": "AcmeCorp", "predicate": "revenue", "object": "$7M"},
+    {"subject": "AcmeCorp", "predicate": "revenue", "object": "$5,000,000"},
+    {"subject": "AcmeCorp", "predicate": "headquarters", "object": "Austin"},
+    {"subject": "AcmeCorp", "predicate": "ceo", "object": "Bob"},
+    {"subject": "AcmeCorp", "predicate": "employee_count", "object": "650"}
+  ],
+  "patient_note.txt": [
+    {"subject": "patient 017", "predicate": "blood_type", "object": "O+"},
+    {"subject": "patient 017", "predicate": "blood_type", "object": "A+"},
+    {"subject": "patient 017", "predicate": "attending", "object": "Dr. Lee"},
+    {"subject": "patient 017", "predicate": "dosage", "object": "500 mg"}
+  ],
+  "project_email.txt": [
+    {"subject": "Apollo", "predicate": "budget", "object": "$2M"},
+    {"subject": "Apollo", "predicate": "budget", "object": "$2,000,000"},
+    {"subject": "Apollo", "predicate": "region", "object": "us-east"},
+    {"subject": "Apollo", "predicate": "manager", "object": "David"},
+    {"subject": "Apollo", "predicate": "kickoff", "object": "Friday"}
+  ],
+  "flight_ops.txt": [
+    {"subject": "flight AA100", "predicate": "gate", "object": "B12"},
+    {"subject": "flight AA100", "predicate": "status", "object": "on time"},
+    {"subject": "flight AA100", "predicate": "status", "object": "delayed"},
+    {"subject": "flight AA100", "predicate": "gate", "object": "B15"}
+  ]
+}

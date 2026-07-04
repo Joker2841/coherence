@@ -1,0 +1,142 @@
+{
+  "pairs": [
+    {
+      "a": "f_rev_5m",
+      "b": "f_rev_7m",
+      "is_contradiction": true,
+      "type": "contradiction"
+    },
+    {
+      "a": "f_rev_7m",
+      "b": "f_rev_5m_fmt",
+      "is_contradiction": true,
+      "type": "contradiction"
+    },
+    {
+      "a": "m_blood_o",
+      "b": "m_blood_a",
+      "is_contradiction": true,
+      "type": "contradiction"
+    },
+    {
+      "a": "l_stat_ontime",
+      "b": "l_stat_delayed",
+      "is_contradiction": true,
+      "type": "contradiction"
+    },
+    {
+      "a": "s_up_999",
+      "b": "s_up_995",
+      "is_contradiction": true,
+      "type": "contradiction"
+    },
+    {
+      "a": "s_own_blue",
+      "b": "s_own_green",
+      "is_contradiction": true,
+      "type": "contradiction"
+    },
+    {
+      "a": "f_hq_boston",
+      "b": "f_hq_austin",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "f_ceo_alice",
+      "b": "f_ceo_bob",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "f_emp_500a",
+      "b": "f_emp_650",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "f_emp_500b",
+      "b": "f_emp_650",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "m_dose_500",
+      "b": "m_dose_250",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "u_mgr_sarah",
+      "b": "u_mgr_david",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "u_mtg_wed",
+      "b": "u_mtg_fri",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "l_gate_b12",
+      "b": "l_gate_b15",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "p_bud_2m",
+      "b": "p_bud_3m",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "p_bud_2m_fmt",
+      "b": "p_bud_3m",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "s_reg_east",
+      "b": "s_reg_west",
+      "is_contradiction": true,
+      "type": "supersession"
+    },
+    {
+      "a": "f_rev_5m",
+      "b": "f_rev_5m_fmt",
+      "is_contradiction": false,
+      "type": "none"
+    },
+    {
+      "a": "p_bud_2m",
+      "b": "p_bud_2m_fmt",
+      "is_contradiction": false,
+      "type": "none"
+    },
+    {
+      "a": "f_emp_500a",
+      "b": "f_emp_500b",
+      "is_contradiction": false,
+      "type": "none"
+    },
+    {
+      "a": "m_doc_lee_a",
+      "b": "m_doc_lee_b",
+      "is_contradiction": false,
+      "type": "none"
+    },
+    {
+      "a": "u_city_den_a",
+      "b": "u_city_den_b",
+      "is_contradiction": false,
+      "type": "none"
+    },
+    {
+      "a": "f_hq_boston",
+      "b": "f_ceo_alice",
+      "is_contradiction": false,
+      "type": "none"
+    }
+  ]
+}
