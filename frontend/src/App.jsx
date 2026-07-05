@@ -2,10 +2,11 @@ import { useState, useMemo } from "react";
 import { Search, Play, RotateCcw, Zap, Gavel, History } from "lucide-react";
 import * as api from "./api.js";
 import { DATASETS } from "./data.js";
-import { runLayout, clamp, W, H } from "./lib.js";
+import { runLayout, clamp, W, H, CW, CH } from "./lib.js";
 import CaseBoard from "./CaseBoard.jsx";
 import ConflictLog from "./ConflictLog.jsx";
 import TimeMachine from "./TimeMachine.jsx";
+import LifecycleRail from "./LifecycleRail.jsx";
 
 export default function App() {
   const [dsKey, setDsKey] = useState("doug");
@@ -25,6 +26,7 @@ export default function App() {
   const [sourceTrust, setSourceTrust] = useState({});  // source -> trust (0..1)
   const [recallLive, setRecallLive] = useState(null);  // live /recall answer, or null (client-side fallback)
   const [pulse, setPulse] = useState(null);
+  const [cascade, setCascade] = useState(null);   // latest resolve narration
   const [selected, setSelected] = useState(null);
 
   const [banner, setBanner] = useState(null);
@@ -36,7 +38,7 @@ export default function App() {
 
   const reset = () => {
     setPhase("empty"); setNodes([]); setEdges([]); setConflicts([]); setMetrics(null);
-    setPositions({}); setStatus({}); setResolved({}); setSourceTrust({}); setRecallLive(null); setPulse(null); setSelected(null); setMode("case");
+    setPositions({}); setStatus({}); setResolved({}); setSourceTrust({}); setRecallLive(null); setPulse(null); setCascade(null); setSelected(null); setMode("case");
   };
   const pick = (k) => { if (k !== dsKey && !busy && !solving) { setDsKey(k); reset(); } };
 
@@ -58,7 +60,7 @@ export default function App() {
     finally { setBusy(false); }
   };
 
-  const applyState = (d) => {
+  const applyState = (d, relayout = false) => {
     setNodes(d.nodes); setEdges(d.edges); setConflicts(d.conflicts); setMetrics(d.metrics);
     const st = {}; d.nodes.forEach((n) => { st[n.id] = n.status || "active"; }); setStatus(st);
     // The backend /resolve marks only the conflict you POST; it doesn't cascade
@@ -80,19 +82,24 @@ export default function App() {
     setResolved(rmap);
     const tr = {}; d.nodes.forEach((n) => { if (n.source != null && n.source_trust != null) tr[n.source] = n.source_trust; }); setSourceTrust(tr);
     setRecallLive(d.recall || null);
-    setPositions(runLayout(d.nodes, d.edges));
+    // Lay out only when explicitly asked (a fresh detection) or on first fill;
+    // resolves keep positions stable so the board doesn't reshuffle.
+    setPositions((prev) => (relayout || !Object.keys(prev).length) ? runLayout(d.nodes, d.edges) : prev);
   };
 
   const detect = async () => {
     setBusy(true);
-    try { const d = await withFallback((f) => api.detect(dsKey, useLLM, f)); setSelected(null); applyState(d); setPhase("detected"); }
+    try { const d = await withFallback((f) => api.detect(dsKey, useLLM, f)); setSelected(null); applyState(d, true); setPhase("detected"); }
     finally { setBusy(false); }
   };
 
   const driftLoser = (loser) => setPositions((prev) => {
     const lp = prev[loser] || { x: W / 2, y: H / 2 };
     const dx = lp.x - W / 2, dy = lp.y - H / 2, d = Math.hypot(dx, dy) || 1;
-    return { ...prev, [loser]: { x: clamp(lp.x + (dx / d) * 86, 30, W - 30), y: clamp(lp.y + (dy / d) * 86, 24, H - 24) } };
+    return { ...prev, [loser]: {
+      x: clamp(lp.x + (dx / d) * 86, CW / 2 + 16, W - CW / 2 - 16),
+      y: clamp(lp.y + (dy / d) * 86, CH / 2 + 16, H - CH / 2 - 16),
+    } };
   });
 
   const doLocalResolve = (conflict, winner, loser) => {
@@ -114,8 +121,24 @@ export default function App() {
     const winner = chosenWinner || conflict.winner || conflict.a.id;
     const loser = winner === conflict.a.id ? conflict.b.id : conflict.a.id;
     setPulse(winner); setTimeout(() => setPulse((p) => (p === winner ? null : p)), 1200);
+
+    // cascade narration: capture the loser's source + pre-resolution trust so the
+    // improve()/forget() beat is correct in live mode too.
+    const loserSrc = nodeById[loser]?.source;
+    const trustMoves = conflict.type === "contradiction" || conflict.type === "semantic";
+    const oldTrust = loserSrc != null ? (sourceTrust[loserSrc] ?? 1) : null;
+    const at = positions[loser];
+
     const d = await withFallback((f) => api.resolve({ conflictId: conflict.id, winnerId: winner, loserId: loser, dataset: dsKey }, f));
     if (d) { applyState(d); driftLoser(loser); } else { doLocalResolve(conflict, winner, loser); }
+
+    let drop = null;
+    if (trustMoves && loserSrc != null) {
+      const nt = d ? (d.nodes || []).find((n) => n.id === loser)?.source_trust : (oldTrust ?? 1) - 0.34;
+      drop = nt != null && oldTrust != null ? Math.max(0, Math.round((oldTrust - nt) * 100)) : 34;
+    }
+    if (at) setCascade({ id: Date.now(), x: at.x, y: at.y, source: loserSrc, drop });
+
     if (selected === conflict.id) setSelected(null);
   };
 
@@ -218,20 +241,21 @@ export default function App() {
 
       {mode === "case" ? (
         <>
+          <LifecycleRail phase={phase} solved={solved} />
           <div className="cover">
             <div className="cno">CASE No. {meta.no}</div>
             <div className="ctitle">{meta.label}</div>
             <div className="cright">
               <span className="qq">{meta.recall.query}</span>
-              <span className={"stat " + statusWord.toLowerCase()}>{statusWord}</span>
-              <span className={"ans " + ansClass}>{ansText}</span>
+              <span key={statusWord} className={"stat " + statusWord.toLowerCase()}>{statusWord}</span>
+              <span key={ansClass} className={"ans " + ansClass}>{ansText}</span>
             </div>
           </div>
 
           <div className="body">
             <CaseBoard
               meta={meta} phase={phase} nodes={nodes} edges={edges} conflicts={conflicts}
-              status={status} resolved={resolved} positions={positions} pulse={pulse}
+              status={status} resolved={resolved} positions={positions} pulse={pulse} cascade={cascade}
               selected={selected} onSelectConflict={setSelected}
             />
             <ConflictLog
