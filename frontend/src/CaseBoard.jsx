@@ -1,6 +1,6 @@
 import { W, H, CW, CH, hash, fmtTime, stringPath, wrapLabel } from "./lib.js";
 
-export default function CaseBoard({ meta, phase, nodes, edges, conflicts, status, resolved, positions, pulse, selected, onSelectConflict }) {
+export default function CaseBoard({ meta, phase, nodes, edges, conflicts, status, resolved, positions, pulse, cascade, selected, onSelectConflict }) {
   const disputed = new Set();
   conflicts.forEach((c) => {
     if (!resolved[c.id] && (c.type === "contradiction" || c.type === "semantic")) { disputed.add(c.a.id); disputed.add(c.b.id); }
@@ -101,6 +101,22 @@ export default function CaseBoard({ meta, phase, nodes, edges, conflicts, status
             </g>
           );
         })}
+
+        {cascade && (() => {
+          const beats = [
+            { k: "c1", txt: `RETRACTED${cascade.source ? ` — ${cascade.source}` : ""}` },
+            cascade.drop != null ? { k: "c2", txt: `trust ↓${cascade.drop}% · ${cascade.source}` } : null,
+            { k: "c3", txt: "✓ cleared" },
+          ].filter(Boolean);
+          return (
+            <g key={cascade.id} className="casc-g" style={{ transform: `translate(${cascade.x}px,${cascade.y}px)` }}>
+              {beats.map((b, i) => (
+                <text key={b.k} className={"casc " + b.k} x="0" y={-CH / 2 - 12} textAnchor="middle"
+                      style={{ animationDelay: `${i * 0.9}s` }}>{b.txt}</text>
+              ))}
+            </g>
+          );
+        })()}
       </svg>
 
       {phase === "empty" && (
