@@ -4,12 +4,7 @@ Central configuration for the FREE, local-first stack.
   Graph DB : Kuzu        (embedded, file-based, $0)
   Vector DB: LanceDB     (embedded, file-based, $0)
   Embedding: Fastembed   (all-MiniLM, CPU-only, $0)  -- or Ollama on your GPU
-  LLM      : Groq free tier (clean structured output)  -- or local Ollama
-
-CRITICAL: Cognee SILENTLY falls back to OpenAI (which costs money) if you set
-ONLY the LLM provider or ONLY the embedding provider. This module sets BOTH
-explicitly and refuses to start if that invariant is broken.
-
+  LLM      : Groq free tier, Gemini-compatible OpenRouter, or local Ollama
 Call `setup()` once at the top of every entry point, BEFORE the first real
 Cognee operation.
 """
@@ -39,6 +34,31 @@ DATASET = os.getenv("COHERENCE_DATASET", "main_dataset")
 CLAIMS_NODE_SET = "claims"
 
 
+def _normalize_llm_settings(provider: str, model: str, endpoint: str) -> tuple[str, str, str]:
+    """Normalize provider/model/endpoint values for the installed Cognee stack."""
+    provider = (provider or "").strip().lower()
+    model = (model or "").strip()
+    endpoint = (endpoint or "").strip()
+
+    if provider == "openrouter":
+        if not model:
+            model = "google/gemini-2.5-flash-lite"
+        if not endpoint:
+            endpoint = "https://openrouter.ai/api/v1"
+        return "openai", f"openrouter/{model}", endpoint
+
+    return provider, model, endpoint
+
+
+def get_llm_args() -> dict[str, object]:
+    """Return provider-specific kwargs to improve compatibility with the installed stack."""
+    provider = (LLM_PROVIDER or "").strip().lower()
+    model = (LLM_MODEL or "").strip()
+    if provider == "openrouter" or (provider == "openai" and model.startswith("openrouter/")):
+        return {"instructor_mode": "OPENROUTER_STRUCTURED_OUTPUTS"}
+    return {}
+
+
 def _guard_no_openai_fallback() -> None:
     """The single most important check for staying at $0."""
     if not LLM_PROVIDER or not EMBEDDING_PROVIDER:
@@ -48,11 +68,20 @@ def _guard_no_openai_fallback() -> None:
         )
         
     if "groq/" in LLM_MODEL and not LLM_API_KEY:
-      raise RuntimeError("Using a Groq model but LLM_API_KEY is empty. Put your free Groq key in .env.")
+        raise RuntimeError("Using a Groq model but LLM_API_KEY is empty. Put your free Groq key in .env.")
+
+    if LLM_PROVIDER == "openai" and LLM_MODEL.startswith("openrouter/") and not LLM_API_KEY:
+        raise RuntimeError("Using OpenRouter but LLM_API_KEY is empty. Put your OpenRouter key in .env.")
 
 
 def setup() -> None:
     """Configure Cognee for the free stack and validate the no-fallback rule."""
+    global LLM_PROVIDER, LLM_MODEL, LLM_ENDPOINT
+
+    LLM_PROVIDER, LLM_MODEL, LLM_ENDPOINT = _normalize_llm_settings(
+        LLM_PROVIDER, LLM_MODEL, LLM_ENDPOINT
+    )
+
     _guard_no_openai_fallback()
 
     # DB providers are read from the environment at engine-init time.
@@ -71,8 +100,14 @@ def setup() -> None:
 
     cognee.config.set_llm_provider(LLM_PROVIDER)
     cognee.config.set_llm_model(LLM_MODEL)
+    if LLM_ENDPOINT:
+        cognee.config.set_llm_endpoint(LLM_ENDPOINT)
     if LLM_API_KEY:
         cognee.config.set_llm_api_key(LLM_API_KEY)
+
+    llm_args = get_llm_args()
+    if llm_args:
+        cognee.config.set_llm_config({"llm_args": llm_args})
 
     print(
         f"[coherence] stack -> LLM={LLM_PROVIDER}:{LLM_MODEL} | "
