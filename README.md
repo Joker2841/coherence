@@ -173,19 +173,19 @@ data shapes — the demo has a safety net if the tunnel drops.
 
 <!-- screenshots -->
 <!-- screenshots -->
-![Case board mid-conflict: red string, a selected conflict with its audit panel](docs/img/board-conflict.png)
-![Resolve cascade: RETRACTED stamp, source-trust drop, reconciled answer](docs/img/resolve-cascade.png)
+![Case board mid-conflict: red string, a selected conflict with its audit panel](docs/images/board-conflict.png)
+![Resolve cascade: RETRACTED stamp, source-trust drop, reconciled answer](docs/images/resolve-cascade.png)
 
 ### The Two-Tier Detector in Action
 <p align="center">
-  <img src="docs/img/two-tier(before).png" width="49%" alt="Two-Tier Detector - LLM Off" />
-  <img src="docs/img/two-tier(after).png" width="49%" alt="Two-Tier Detector - LLM On" />
+  <img src="docs/images/two-tier(before).png" width="49%" alt="Two-Tier Detector - LLM Off" />
+  <img src="docs/images/two-tier(after).png" width="49%" alt="Two-Tier Detector - LLM On" />
 </p>
 <p align="center">
   <em>Left: With the LLM tier toggled off, semantic contradictions go undetected, leaving recall at 67%. Right: Activating the vector-gated LLM tier catches the semantic clash, lifting recovery metrics to a perfect 100%.</em>
 </p>
 
-![Time-travel: the belief state scrubbed event by event](docs/img/time-travel.png)
+![Time-travel: the belief state scrubbed event by event](docs/images/time-travel.png)
 
 ## Team
 
