@@ -125,7 +125,7 @@ The first four run fully offline. The last three call an LLM.
 ## Quickstart
 
 ```bash
-git clone [FILL_IN: repo link] && cd coherence
+git clone https://github.com/Joker2841/coherence.git && cd coherence
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt && pip install -e .
 cp .env.example .env      # add one free LLM key, see below
